@@ -28,8 +28,8 @@ import android.support.annotation.NonNull;
 
 import com.auth0.core.Application;
 import com.auth0.core.Connection;
-import com.auth0.core.Strategies;
-import com.auth0.core.Strategy;
+import com.auth0.java.core.Strategies;
+import com.auth0.java.core.Strategy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -90,9 +90,13 @@ public class Configuration {
     }
 
     private Connection filterDatabaseConnections(Strategy databaseStrategy, Set<String> connections, String defaultDatabaseName) {
-        List<Connection> dbs = databaseStrategy != null ? databaseStrategy.getConnections() : null;
-        if (dbs == null) {
+        if (databaseStrategy == null) {
             return null;
+        }
+        List<com.auth0.java.core.Connection> list = databaseStrategy.getConnections();
+        List<Connection> dbs = new ArrayList<>(list.size());
+        for (com.auth0.java.core.Connection conn : list) {
+            dbs.add(new Connection(conn));
         }
         Set<String> set = new HashSet<>(connections);
         if (defaultDatabaseName != null) {
@@ -112,8 +116,8 @@ public class Configuration {
         if (strategy == null || connections.isEmpty()) {
             return strategy;
         }
-        List<Connection> filtered = new ArrayList<>(strategy.getConnections().size());
-        for (Connection connection : strategy.getConnections()) {
+        List<com.auth0.java.core.Connection> filtered = new ArrayList<>(strategy.getConnections().size());
+        for (com.auth0.java.core.Connection connection : strategy.getConnections()) {
             if (connections.contains(connection.getName())) {
                 filtered.add(connection);
             }
@@ -159,7 +163,7 @@ public class Configuration {
         if (activeDirectoryStrategy == null) {
             return null;
         }
-        final List<Connection> connections = activeDirectoryStrategy.getConnections();
-        return !connections.isEmpty() ? connections.get(0) : null;
+        final List<com.auth0.java.core.Connection> connections = activeDirectoryStrategy.getConnections();
+        return !connections.isEmpty() ? new Connection(connections.get(0)) : null;
     }
 }

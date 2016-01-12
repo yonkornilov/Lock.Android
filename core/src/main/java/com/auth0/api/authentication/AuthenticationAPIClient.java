@@ -26,23 +26,22 @@ package com.auth0.api.authentication;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
-import com.auth0.api.ParameterBuilder;
 import com.auth0.api.ParameterizableRequest;
 import com.auth0.api.Request;
-import com.auth0.api.internal.RequestFactory;
+import com.auth0.api.internal.ApplicationInfoRequest;
+import com.auth0.api.internal.DatabaseUserRequest;
+import com.auth0.api.internal.ParameterizableRequestImpl;
+import com.auth0.api.internal.RequestImpl;
+import com.auth0.api.internal.TokenRequest;
+import com.auth0.api.internal.UserProfileRequest;
 import com.auth0.core.Application;
 import com.auth0.core.Auth0;
 import com.auth0.core.DatabaseUser;
 import com.auth0.core.Token;
 import com.auth0.core.UserProfile;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.OkHttpClient;
-import java.util.Map;
 
-import static com.auth0.api.ParameterBuilder.GRANT_TYPE_PASSWORD;
+import java.util.Map;
 
 /**
  * API client for Auth0 Authentication API.
@@ -50,31 +49,24 @@ import static com.auth0.api.ParameterBuilder.GRANT_TYPE_PASSWORD;
  */
 public class AuthenticationAPIClient {
 
-    private static final String TAG = AuthenticationAPIClient.class.getName();
-
-    private static final String USERNAME_KEY = "username";
-    private static final String PASSWORD_KEY = "password";
-    private static final String DEFAULT_DB_CONNECTION = "Username-Password-Authentication";
-    private static final String ID_TOKEN_KEY = "id_token";
-    private static final String EMAIL_KEY = "email";
-    private static final String REFRESH_TOKEN_KEY = "refresh_token";
-    private static final String API_TYPE_KEY = "api_type";
-    private static final String DEFAULT_API_TYPE = "app";
-    private static final String PHONE_NUMBER_KEY = "phone_number";
-
-    private final Auth0 auth0;
-    private final OkHttpClient client;
     private final Handler handler;
-    private final ObjectMapper mapper;
+    private final com.auth0.java.api.authentication.AuthenticationAPIClient apiClient;
 
-    private String defaultDbConnection = DEFAULT_DB_CONNECTION;
+    public AuthenticationAPIClient(com.auth0.java.api.authentication.AuthenticationAPIClient apiClient) {
+        this(apiClient, new Handler(Looper.getMainLooper()));
+    }
+
+    public AuthenticationAPIClient(com.auth0.java.api.authentication.AuthenticationAPIClient apiClient, Handler handler) {
+        this.apiClient = apiClient;
+        this.handler = handler;
+    }
 
     /**
      * Creates a new API client instance providing Auth0 account info.
      * @param auth0 account information
      */
     public AuthenticationAPIClient(Auth0 auth0) {
-        this(auth0, new Handler(Looper.getMainLooper()));
+        this(new com.auth0.java.api.authentication.AuthenticationAPIClient(auth0), new Handler(Looper.getMainLooper()));
     }
 
     /**
@@ -83,7 +75,7 @@ public class AuthenticationAPIClient {
      * @param handler where callback will be called with either the response or error from the server
      */
     public AuthenticationAPIClient(Auth0 auth0, Handler handler) {
-        this(auth0, new OkHttpClient(), handler, new ObjectMapper());
+        this(new com.auth0.java.api.authentication.AuthenticationAPIClient(auth0), handler);
     }
 
     /**
@@ -97,19 +89,12 @@ public class AuthenticationAPIClient {
         this(new Auth0(clientID, baseURL, configurationURL));
     }
 
-    AuthenticationAPIClient(Auth0 auth0, OkHttpClient client, Handler handler, ObjectMapper mapper) {
-        this.auth0 = auth0;
-        this.client = client;
-        this.handler = handler;
-        this.mapper = mapper;
-    }
-
     public String getClientId() {
-        return auth0.getClientId();
+        return apiClient.getClientId();
     }
 
     public String getBaseURL() {
-        return auth0.getDomainUrl();
+        return apiClient.getBaseURL();
     }
 
     /**
@@ -117,7 +102,7 @@ public class AuthenticationAPIClient {
      * @param defaultDbConnection name to use on every login with DB connection
      */
     public void setDefaultDbConnection(String defaultDbConnection) {
-        this.defaultDbConnection = defaultDbConnection;
+        apiClient.setDefaultDbConnection(defaultDbConnection);
     }
 
     /**
@@ -125,11 +110,7 @@ public class AuthenticationAPIClient {
      * @return a Auth0 request to start
      */
     public Request<Application> fetchApplicationInfo() {
-        HttpUrl url = HttpUrl.parse(auth0.getConfigurationUrl()).newBuilder()
-                .addPathSegment("client")
-                .addPathSegment(auth0.getClientId() + ".js")
-                .build();
-        return RequestFactory.newApplicationInfoRequest(url, client, handler, mapper);
+        return new ApplicationInfoRequest(handler, apiClient.fetchApplicationInfo());
     }
 
     /**
@@ -137,19 +118,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public ParameterizableRequest<Token> loginWithResourceOwner() {
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("oauth")
-                .addPathSegment("ro")
-                .build();
-
-        Map<String, Object> requestParameters = new ParameterBuilder()
-                .setClientId(getClientId())
-                .setConnection(defaultDbConnection)
-                .asDictionary();
-        ParameterizableRequest<Token> request = RequestFactory.POST(url, client, handler, mapper, Token.class)
-                .addParameters(requestParameters);
-        Log.d(TAG, "Trying to login using " + url.toString() + " with parameters " + requestParameters);
-        return request;
+        return new TokenRequest(handler, apiClient.loginWithResourceOwner());
     }
 
     /**
@@ -159,12 +128,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start that will yield {@link Token} and {@link UserProfile}
      */
     public AuthenticationRequest login(String usernameOrEmail, String password) {
-        Map<String, Object> requestParameters = new ParameterBuilder()
-                .set(USERNAME_KEY, usernameOrEmail)
-                .set(PASSWORD_KEY, password)
-                .setGrantType(GRANT_TYPE_PASSWORD)
-                .asDictionary();
-        return newAuthenticationRequest(requestParameters);
+        return new AuthenticationRequest(handler, apiClient.login(usernameOrEmail, password));
     }
 
     /**
@@ -174,23 +138,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start that will yield {@link Token} and {@link UserProfile}
      */
     public AuthenticationRequest loginWithOAuthAccessToken(String token, String connection) {
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("oauth")
-                .addPathSegment("access_token")
-                .build();
-
-        Map<String, Object> parameters = ParameterBuilder.newBuilder()
-                .setClientId(getClientId())
-                .setConnection(connection)
-                .setAccessToken(token)
-                .asDictionary();
-
-        Log.v(TAG, "Performing OAuth access_token login with parameters " + parameters);
-
-        final ParameterizableRequest<UserProfile> profileRequest = profileRequest();
-        ParameterizableRequest<Token> credentialsRequest = RequestFactory.POST(url, client, handler, mapper, Token.class)
-                .addParameters(parameters);
-        return new AuthenticationRequest(credentialsRequest, profileRequest);
+        return new AuthenticationRequest(handler, apiClient.loginWithOAuthAccessToken(token, connection));
     }
 
     /**
@@ -200,14 +148,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start that will yield {@link Token} and {@link UserProfile}
      */
     public AuthenticationRequest loginWithPhoneNumber(String phoneNumber, String verificationCode) {
-        Map<String, Object> parameters = ParameterBuilder.newBuilder()
-                .set(USERNAME_KEY, phoneNumber)
-                .set(PASSWORD_KEY, verificationCode)
-                .setGrantType(GRANT_TYPE_PASSWORD)
-                .setClientId(getClientId())
-                .setConnection("sms")
-                .asDictionary();
-        return newAuthenticationRequest(parameters);
+        return new AuthenticationRequest(handler, apiClient.loginWithPhoneNumber(phoneNumber, verificationCode));
     }
 
     /**
@@ -217,14 +158,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start that will yield {@link Token} and {@link UserProfile}
      */
     public AuthenticationRequest loginWithEmail(String email, String verificationCode) {
-        Map<String, Object> parameters = ParameterBuilder.newBuilder()
-                .set(USERNAME_KEY, email)
-                .set(PASSWORD_KEY, verificationCode)
-                .setGrantType(GRANT_TYPE_PASSWORD)
-                .setClientId(getClientId())
-                .setConnection("email")
-                .asDictionary();
-        return newAuthenticationRequest(parameters);
+        return new AuthenticationRequest(handler, apiClient.loginWithEmail(email, verificationCode));
     }
 
     /**
@@ -233,13 +167,7 @@ public class AuthenticationAPIClient {
      * @return a request to start
      */
     public Request<UserProfile> tokenInfo(String idToken) {
-        Map<String, Object> requestParameters = new ParameterBuilder()
-                .clearAll()
-                .set(ID_TOKEN_KEY, idToken)
-                .asDictionary();
-        Log.d(TAG, "Trying to fetch token with parameters " + requestParameters);
-        return profileRequest()
-                .addParameters(requestParameters);
+        return new UserProfileRequest(handler, apiClient.tokenInfo(idToken));
     }
 
     /**
@@ -250,20 +178,7 @@ public class AuthenticationAPIClient {
      * @return a request to start
      */
     public ParameterizableRequest<DatabaseUser> createUser(String email, String password, String username) {
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("dbconnections")
-                .addPathSegment("signup")
-                .build();
-        Map<String, Object> parameters = new ParameterBuilder()
-                .set(USERNAME_KEY, username)
-                .set(EMAIL_KEY, email)
-                .set(PASSWORD_KEY, password)
-                .setConnection(defaultDbConnection)
-                .setClientId(getClientId())
-                .asDictionary();
-        Log.d(TAG, "Creating user with email " + email + " and username " + username);
-        return RequestFactory.POST(url, client, handler, mapper, DatabaseUser.class)
-                .addParameters(parameters);
+        return new DatabaseUserRequest(handler, apiClient.createUser(email, password, username));
     }
 
     /**
@@ -285,9 +200,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start that will yield {@link Token} and {@link UserProfile}
      */
     public SignUpRequest signUp(String email, String password, String username) {
-        ParameterizableRequest<DatabaseUser> createUserRequest = createUser(email, password, username);
-        AuthenticationRequest authenticationRequest = login(email, password);
-        return new SignUpRequest(createUserRequest, authenticationRequest);
+        return new SignUpRequest(handler, apiClient.signUp(email, password, username));
     }
 
     /**
@@ -298,9 +211,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start that will yield {@link Token} and {@link UserProfile}
      */
     public SignUpRequest signUp(String email, String password) {
-        ParameterizableRequest<DatabaseUser> createUserRequest = createUser(email, password);
-        AuthenticationRequest authenticationRequest = login(email, password);
-        return new SignUpRequest(createUserRequest, authenticationRequest);
+        return new SignUpRequest(handler, apiClient.signUp(email, password));
     }
 
     /**
@@ -310,20 +221,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public ParameterizableRequest<Void> changePassword(String email, String newPassword) {
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("dbconnections")
-                .addPathSegment("change_password")
-                .build();
-
-        Map<String, Object> parameters = ParameterBuilder.newBuilder()
-                .set(EMAIL_KEY, email)
-                .set(PASSWORD_KEY, newPassword)
-                .setClientId(getClientId())
-                .setConnection(defaultDbConnection)
-                .asDictionary();
-
-        return RequestFactory.POST(url, client, handler, mapper)
-                .addParameters(parameters);
+        return new ParameterizableRequestImpl<>(handler, apiClient.changePassword(email, newPassword));
     }
 
     /**
@@ -331,16 +229,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public ParameterizableRequest<Map<String, Object>> delegation() {
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("delegation")
-                .build();
-        Map<String, Object> parameters = ParameterBuilder.newEmptyBuilder()
-                .clearAll()
-                .setClientId(getClientId())
-                .setGrantType(ParameterBuilder.GRANT_TYPE_JWT)
-                .asDictionary();
-        return RequestFactory.rawPOST(url, client, handler, mapper)
-                .addParameters(parameters);
+        return new ParameterizableRequestImpl<>(handler, apiClient.delegation());
     }
 
     /**
@@ -349,14 +238,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public DelegationRequest delegationWithIdToken(String idToken) {
-        Map<String, Object> parameters = new ParameterBuilder()
-                .clearAll()
-                .set(ID_TOKEN_KEY, idToken)
-                .set(API_TYPE_KEY, DEFAULT_API_TYPE)
-                .asDictionary();
-        ParameterizableRequest<Map<String, Object>> request = delegation()
-                .addParameters(parameters);
-        return new DelegationRequest(request);
+        return new DelegationRequest(handler, apiClient.delegationWithIdToken(idToken));
     }
 
     /**
@@ -366,14 +248,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public DelegationRequest delegationWithRefreshToken(String refreshToken) {
-        Map<String, Object> parameters = new ParameterBuilder()
-                .clearAll()
-                .set(REFRESH_TOKEN_KEY, refreshToken)
-                .set(API_TYPE_KEY, DEFAULT_API_TYPE)
-                .asDictionary();
-        ParameterizableRequest<Map<String, Object>> request = delegation()
-                .addParameters(parameters);
-        return new DelegationRequest(request);
+        return new DelegationRequest(handler, apiClient.delegationWithRefreshToken(refreshToken));
     }
 
     /**
@@ -383,17 +258,7 @@ public class AuthenticationAPIClient {
      * @return a request to start
      */
     public Request<Void> unlink(String userId, String accessToken) {
-        Map<String, Object> parameters = new ParameterBuilder()
-                .clearAll()
-                .set("clientID", getClientId())
-                .set("user_id", userId)
-                .set("access_token", accessToken)
-                .asDictionary();
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("unlink")
-                .build();
-        return RequestFactory.POST(url, client, handler, mapper)
-                .addParameters(parameters);
+        return new RequestImpl<>(handler, apiClient.unlink(userId, accessToken));
     }
 
     /**
@@ -401,18 +266,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and stat
      */
     public ParameterizableRequest<Void> passwordless() {
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("passwordless")
-                .addPathSegment("start")
-                .build();
-
-        Map<String, Object> parameters = ParameterBuilder.newBuilder()
-                .clearAll()
-                .setClientId(getClientId())
-                .asDictionary();
-
-        return RequestFactory.POST(url, client, handler, mapper)
-                .addParameters(parameters);
+        return new ParameterizableRequestImpl<>(handler, apiClient.passwordless());
     }
 
     /**
@@ -422,14 +276,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public ParameterizableRequest<Void> passwordlessWithEmail(String email, boolean useMagicLink) {
-        Map<String, Object> parameters = ParameterBuilder.newBuilder()
-                .clearAll()
-                .set(EMAIL_KEY, email)
-                .set("send", useMagicLink ? "link_android" : "code")
-                .setConnection("email")
-                .asDictionary();
-        return passwordless()
-                .addParameters(parameters);
+        return new ParameterizableRequestImpl<>(handler, apiClient.passwordlessWithEmail(email, useMagicLink));
     }
 
     /**
@@ -439,30 +286,6 @@ public class AuthenticationAPIClient {
      * @return a request to configure and stat
      */
     public ParameterizableRequest<Void> passwordlessWithSMS(String phoneNumber, boolean useMagicLink) {
-        Map<String, Object> parameters = ParameterBuilder.newBuilder()
-                .clearAll()
-                .set(PHONE_NUMBER_KEY, phoneNumber)
-                .set("send", useMagicLink ? "link_android" : "code")
-                .setConnection("sms")
-                .asDictionary();
-        return passwordless()
-                .addParameters(parameters);
+        return new ParameterizableRequestImpl<>(handler, apiClient.passwordlessWithSMS(phoneNumber, useMagicLink));
     }
-
-    private ParameterizableRequest<UserProfile> profileRequest() {
-        HttpUrl url = HttpUrl.parse(auth0.getDomainUrl()).newBuilder()
-                .addPathSegment("tokeninfo")
-                .build();
-        return RequestFactory.POST(url, client, handler, mapper, UserProfile.class);
-
-    }
-
-    private AuthenticationRequest newAuthenticationRequest(Map<String, Object> parameters) {
-        final ParameterizableRequest<Token> credentialsRequest = loginWithResourceOwner()
-                .addParameters(parameters);
-        final ParameterizableRequest<UserProfile> profileRequest = profileRequest();
-
-        return new AuthenticationRequest(credentialsRequest, profileRequest);
-    }
-
 }

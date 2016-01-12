@@ -36,12 +36,12 @@ import android.util.Log;
 import com.auth0.api.APIClient;
 import com.auth0.api.ParameterBuilder;
 import com.auth0.api.authentication.AuthenticationAPIClient;
-import com.auth0.api.internal.RequestFactory;
 import com.auth0.core.Auth0;
-import com.auth0.core.Strategies;
 import com.auth0.identity.IdentityProvider;
 import com.auth0.identity.WebIdentityProvider;
 import com.auth0.identity.web.CallbackParser;
+import com.auth0.java.api.internal.RequestFactory;
+import com.auth0.java.core.Strategies;
 import com.auth0.lock.credentials.CredentialStore;
 import com.auth0.lock.credentials.NullCredentialStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -130,7 +130,7 @@ public class Lock {
         this.bus = new Bus("Lock");
         this.defaultProvider = new WebIdentityProvider(new CallbackParser(), auth0.getClientId(), auth0.getAuthorizeUrl());
         this.apiClient = auth0.newAPIClient();
-        this.authenticationAPIClient = auth0.newAuthenticationAPIClient();
+        this.authenticationAPIClient = new AuthenticationAPIClient( auth0.newAuthenticationAPIClient() );
         this.fullScreen = false;
         this.signUpEnabled = true;
         this.changePasswordEnabled = true;
@@ -218,7 +218,7 @@ public class Lock {
     /**
      * Set a native handler for a specific Identity Provider (IdP), e.g.: Facebook
      *
-     * @param serviceName name of the Auth0 strategy to handle. (For all valid values check {@link com.auth0.core.Strategies}
+     * @param serviceName name of the Auth0 strategy to handle. (For all valid values check {@link com.auth0.java.core.Strategies}
      * @param provider    IdP handler
      * @deprecated use {@link com.auth0.lock.Lock.Builder#withIdentityProvider(Strategies, IdentityProvider)} instead
      */
@@ -577,7 +577,7 @@ public class Lock {
         /**
          * Sets a native handler for a specific Identity Provider (IdP), e.g.: Facebook
          *
-         * @param strategy Auth0 strategy to handle. (For all valid values check {@link com.auth0.core.Strategies}
+         * @param strategy Auth0 strategy to handle. (For all valid values check {@link com.auth0.java.core.Strategies}
          * @param identityProvider IdP handler
          * @return the Builder instance being used
          */

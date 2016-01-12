@@ -24,11 +24,11 @@
 
 package com.auth0.api.authentication;
 
-import com.auth0.api.ParameterBuilder;
-import com.auth0.api.ParameterizableRequest;
+import android.os.Handler;
+
 import com.auth0.api.callback.AuthenticationCallback;
-import com.auth0.api.callback.BaseCallback;
-import com.auth0.core.DatabaseUser;
+import com.auth0.core.Token;
+import com.auth0.core.UserProfile;
 
 import java.util.Map;
 
@@ -37,12 +37,12 @@ import java.util.Map;
  */
 public class SignUpRequest {
 
-    private final ParameterizableRequest<DatabaseUser> signUpRequest;
-    private final AuthenticationRequest authenticationRequest;
+    Handler handler;
+    com.auth0.java.api.authentication.SignUpRequest request;
 
-    SignUpRequest(ParameterizableRequest<DatabaseUser> signUpRequest, AuthenticationRequest authenticationRequest) {
-        this.signUpRequest = signUpRequest;
-        this.authenticationRequest = authenticationRequest;
+    SignUpRequest(Handler handler, com.auth0.java.api.authentication.SignUpRequest request) {
+        this.handler = handler;
+        this.request = request;
     }
 
     /**
@@ -51,7 +51,7 @@ public class SignUpRequest {
      * @return itself
      */
     public SignUpRequest addSignUpParameters(Map<String, Object> parameters) {
-        signUpRequest.addParameters(parameters);
+        request.addSignUpParameters(parameters);
         return this;
     }
 
@@ -61,7 +61,7 @@ public class SignUpRequest {
      * @return itself
      */
     public SignUpRequest addAuthenticationParameters(Map<String, Object> parameters) {
-        authenticationRequest.addParameters(parameters);
+        request.addAuthenticationParameters(parameters);
         return this;
     }
 
@@ -71,7 +71,7 @@ public class SignUpRequest {
      * @return itself
      */
     public SignUpRequest setScope(String scope) {
-        authenticationRequest.setScope(scope);
+        request.setScope(scope);
         return this;
     }
 
@@ -81,7 +81,7 @@ public class SignUpRequest {
      * @return itself
      */
     public SignUpRequest setConnection(String connection) {
-        authenticationRequest.setConnection(connection);
+        request.setConnection(connection);
         return this;
     }
 
@@ -90,16 +90,25 @@ public class SignUpRequest {
      * @param callback called on either success or failure.
      */
     public void start(final AuthenticationCallback callback) {
-        signUpRequest.start(new BaseCallback<DatabaseUser>() {
+        request.start(new com.auth0.java.api.callback.AuthenticationCallback() {
             @Override
-            public void onSuccess(final DatabaseUser user) {
-                authenticationRequest
-                        .start(callback);
+            public void onSuccess(final com.auth0.java.core.UserProfile profile, final com.auth0.java.core.Token token) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onSuccess(new UserProfile(profile), new Token(token));
+                    }
+                });
             }
 
             @Override
-            public void onFailure(Throwable error) {
-                callback.onFailure(error);
+            public void onFailure(final Throwable error) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onFailure(error);
+                    }
+                });
             }
         });
     }

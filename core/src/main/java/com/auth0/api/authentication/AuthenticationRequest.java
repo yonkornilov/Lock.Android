@@ -24,10 +24,9 @@
 
 package com.auth0.api.authentication;
 
-import com.auth0.api.ParameterBuilder;
-import com.auth0.api.ParameterizableRequest;
+import android.os.Handler;
+
 import com.auth0.api.callback.AuthenticationCallback;
-import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.Token;
 import com.auth0.core.UserProfile;
 
@@ -38,12 +37,12 @@ import java.util.Map;
  */
 public class AuthenticationRequest {
 
-    private final ParameterizableRequest<Token> credentialsRequest;
-    private final ParameterizableRequest<UserProfile> tokenInfoRequest;
+    Handler handler;
+    com.auth0.java.api.authentication.AuthenticationRequest request;
 
-    AuthenticationRequest(ParameterizableRequest<Token> credentialsRequest, ParameterizableRequest<UserProfile> tokenInfoRequest) {
-        this.credentialsRequest = credentialsRequest;
-        this.tokenInfoRequest = tokenInfoRequest;
+    protected AuthenticationRequest(Handler handler, com.auth0.java.api.authentication.AuthenticationRequest request) {
+        this.handler = handler;
+        this.request = request;
     }
 
     /**
@@ -52,7 +51,7 @@ public class AuthenticationRequest {
      * @return itself
      */
     public AuthenticationRequest addParameters(Map<String, Object> parameters) {
-        credentialsRequest.addParameters(parameters);
+        request.addParameters(parameters);
         return this;
     }
 
@@ -62,7 +61,7 @@ public class AuthenticationRequest {
      * @return itself
      */
     public AuthenticationRequest setScope(String scope) {
-        credentialsRequest.addParameters(new ParameterBuilder().clearAll().setScope(scope).asDictionary());
+        request.setScope(scope);
         return this;
     }
 
@@ -72,7 +71,7 @@ public class AuthenticationRequest {
      * @return itself
      */
     public AuthenticationRequest setConnection(String connection) {
-        credentialsRequest.addParameters(new ParameterBuilder().clearAll().setConnection(connection).asDictionary());
+        request.setConnection(connection);
         return this;
     }
 
@@ -81,31 +80,25 @@ public class AuthenticationRequest {
      * @param callback called on either success or failure
      */
     public void start(final AuthenticationCallback callback) {
-        credentialsRequest.start(new BaseCallback<Token>() {
+        request.start(new com.auth0.java.api.callback.AuthenticationCallback() {
             @Override
-            public void onSuccess(final Token token) {
-                Map<String, Object> parameters = new ParameterBuilder()
-                        .clearAll()
-                        .set("id_token", token.getIdToken())
-                        .asDictionary();
-                tokenInfoRequest
-                        .addParameters(parameters)
-                        .start(new BaseCallback<UserProfile>() {
-                            @Override
-                            public void onSuccess(UserProfile profile) {
-                                callback.onSuccess(profile, token);
-                            }
-
-                            @Override
-                            public void onFailure(Throwable error) {
-                                callback.onFailure(error);
-                            }
-                        });
+            public void onSuccess(final com.auth0.java.core.UserProfile profile, final com.auth0.java.core.Token token) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onSuccess(new UserProfile(profile), new Token(token));
+                    }
+                });
             }
 
             @Override
-            public void onFailure(Throwable error) {
-                callback.onFailure(error);
+            public void onFailure(final Throwable error) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onFailure(error);
+                    }
+                });
             }
         });
     }

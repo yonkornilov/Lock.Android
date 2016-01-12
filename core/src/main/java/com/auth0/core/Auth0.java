@@ -24,82 +24,21 @@
 
 package com.auth0.core;
 
-import android.net.Uri;
-
 import com.auth0.api.APIClient;
 import com.auth0.api.authentication.AuthenticationAPIClient;
 
-public class Auth0 {
-
-    private static final String AUTH0_US_CDN_URL = "https://cdn.auth0.com";
-    private static final String DOT_AUTH0_DOT_COM = ".auth0.com";
-
-    private final String clientId;
-    private final String domainUrl;
-    private final String configurationUrl;
+public class Auth0 extends com.auth0.java.core.Auth0 {
 
     public Auth0(String clientId, String domain) {
-        this(clientId, domain, null);
+        super(clientId, domain);
     }
 
     public Auth0(String clientId, String domain, String configurationDomain) {
-        this.clientId = clientId;
-        this.domainUrl = ensureUrlString(domain);
-        this.configurationUrl = resolveConfiguration(configurationDomain, this.domainUrl);
-    }
-
-    private String resolveConfiguration(String configurationDomain, String domainUrl) {
-        String url = ensureUrlString(configurationDomain);
-        if (configurationDomain == null && domainUrl != null) {
-            final Uri domainUri = Uri.parse(domainUrl);
-            final String host = domainUri.getHost();
-            if (host.endsWith(DOT_AUTH0_DOT_COM)) {
-                String[] parts = host.split("\\.");
-                if (parts.length > 3) {
-                    url = "https://cdn." + parts[parts.length-3] + DOT_AUTH0_DOT_COM;
-                } else {
-                    url = AUTH0_US_CDN_URL;
-                }
-            } else {
-                url = domainUrl;
-            }
-        }
-        return url;
-    }
-
-    private String ensureUrlString(String url) {
-        String safeUrl = null;
-        if (url != null) {
-            safeUrl = url.startsWith("http") ? url : "https://" + url;
-        }
-        return safeUrl;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    public String getDomainUrl() {
-        return domainUrl;
-    }
-
-    public String getConfigurationUrl() {
-        return configurationUrl;
+        super(clientId, domain, configurationDomain);
     }
 
     @Deprecated
     public APIClient newAPIClient() {
         return new APIClient(this.clientId, this.domainUrl, this.configurationUrl);
-    }
-
-    public AuthenticationAPIClient newAuthenticationAPIClient() {
-        return new AuthenticationAPIClient(this);
-    }
-
-    public String getAuthorizeUrl() {
-        return Uri.parse(domainUrl).buildUpon()
-                .path("authorize")
-                .build()
-                .toString();
     }
 }

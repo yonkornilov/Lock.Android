@@ -27,10 +27,8 @@ package com.auth0.lock.util;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
-import com.auth0.core.Application;
 import com.auth0.core.Connection;
-import com.auth0.core.Strategies;
-import com.auth0.core.Strategy;
+import com.auth0.java.core.Strategy;
 import com.auth0.lock.Configuration;
 import com.auth0.lock.Lock;
 import com.auth0.lock.fragment.BaseTitledFragment;

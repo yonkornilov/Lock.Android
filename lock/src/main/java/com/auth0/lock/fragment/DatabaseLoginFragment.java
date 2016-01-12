@@ -41,7 +41,6 @@ import android.widget.TextView;
 import com.auth0.api.ParameterBuilder;
 import com.auth0.api.callback.AuthenticationCallback;
 import com.auth0.core.Connection;
-import com.auth0.core.Strategy;
 import com.auth0.core.Token;
 import com.auth0.core.UserProfile;
 import com.auth0.lock.Configuration;
@@ -160,7 +159,7 @@ public class DatabaseLoginFragment extends BaseTitledFragment {
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     final boolean matches = matcher.matches(s.toString());
                     if (matches) {
-                        final Connection connection = matcher.getConnection();
+                        final Connection connection = new Connection(matcher.getConnection());
                         Log.i(DatabaseLoginFragment.class.getName(), "Matched with domain of connection " + connection.getName());
                         final String domain = connection.getValueForKey("domain");
                         String singleSignOnButtonText = String.format(getString(R.string.com_auth0_db_single_sign_on_button), domain.toUpperCase());
@@ -251,8 +250,9 @@ public class DatabaseLoginFragment extends BaseTitledFragment {
     }
 
     private void login() {
-        final Connection connection = matcher.getConnection();
-        if (connection != null) {
+        final com.auth0.java.core.Connection javaConnection = matcher.getConnection();
+        if (javaConnection != null) {
+            final Connection connection = new Connection(javaConnection);
             final Configuration configuration = LockContext.getLock(getActivity()).getConfiguration();
             if (configuration.shouldUseNativeAuthentication(connection, enterpriseConnectionsUsingWebForm)) {
                 bus.post(new EnterpriseAuthenticationRequest(connection));

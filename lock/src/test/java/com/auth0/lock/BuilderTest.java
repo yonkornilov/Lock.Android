@@ -26,8 +26,8 @@ package com.auth0.lock;
 
 import com.auth0.api.APIClient;
 import com.auth0.api.authentication.AuthenticationAPIClient;
-import com.auth0.core.Strategies;
 import com.auth0.identity.IdentityProvider;
+import com.auth0.java.core.Strategies;
 import com.auth0.lock.credentials.CredentialStore;
 import com.auth0.lock.credentials.NullCredentialStore;
 

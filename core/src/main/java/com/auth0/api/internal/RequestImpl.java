@@ -1,5 +1,5 @@
 /*
- * DatabaseUser.java
+ * Request.java
  *
  * Copyright (c) 2015 Auth0 (http://auth0.com)
  *
@@ -22,14 +22,38 @@
  * THE SOFTWARE.
  */
 
-package com.auth0.core;
+package com.auth0.api.internal;
+
+import android.os.Handler;
+
+import com.auth0.api.Request;
+import com.auth0.api.callback.BaseCallback;
 
 /**
- * Value holder for Database Sign Up operation
+ * Defines a request that can be started
+ * @param <T>
  */
-public class DatabaseUser extends com.auth0.java.core.DatabaseUser {
+public class RequestImpl<T> extends HandledRequest<T> implements Request<T> {
 
-    public DatabaseUser(String email, String username, boolean emailVerified) {
-        super(email, username, emailVerified);
+    protected com.auth0.java.api.Request<T> request;
+
+    public RequestImpl(Handler handler, com.auth0.java.api.Request<T> request) {
+        super(handler);
+        this.request = request;
+    }
+
+    public void start(final BaseCallback<T> callback) {
+        setCallback(callback);
+        request.start(new com.auth0.java.api.callback.BaseCallback<T>() {
+            @Override
+            public void onSuccess(final T payload) {
+                postOnSuccess(payload);
+            }
+
+            @Override
+            public void onFailure(final Throwable error) {
+                postOnFailure(error);
+            }
+        });
     }
 }

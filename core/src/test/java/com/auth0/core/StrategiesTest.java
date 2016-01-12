@@ -1,6 +1,7 @@
 package com.auth0.core;
 
 import com.auth0.android.BuildConfig;
+import com.auth0.java.core.Strategies;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

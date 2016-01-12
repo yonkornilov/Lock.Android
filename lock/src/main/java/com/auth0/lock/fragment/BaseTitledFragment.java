@@ -29,7 +29,6 @@ import android.support.v4.app.Fragment;
 import android.view.View;
 import android.widget.TextView;
 
-import com.auth0.api.APIClient;
 import com.auth0.api.authentication.AuthenticationAPIClient;
 import com.auth0.lock.Lock;
 import com.auth0.lock.LockContext;

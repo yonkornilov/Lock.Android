@@ -29,7 +29,10 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.auth0.api.callback.BaseCallback;
+import com.auth0.api.internal.HandledRequest;
 import com.auth0.api.internal.RequestFactory;
+import com.auth0.api.internal.RequestImpl;
+import com.auth0.java.api.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;
@@ -109,8 +112,11 @@ public class AuthenticatedAPIClient extends BaseAPIClient {
 
         Log.v(TAG, "Requesting SMS code for phone " + phoneNumber);
 
-        RequestFactory.POST(url, newClient, new Handler(Looper.getMainLooper()), new ObjectMapper(), jwt)
-                .addParameters(params)
-                .start(callback);
+        RequestImpl<Void> request = new RequestImpl<>(
+                new Handler(Looper.getMainLooper()),
+                RequestFactory.POST(url, newClient, new ObjectMapper(), jwt)
+                        .addParameters(params));
+
+        request.start(callback);
     }
 }

@@ -6,10 +6,10 @@ import com.auth0.api.callback.BaseCallback;
 import com.auth0.api.callback.RefreshIdTokenCallback;
 import com.auth0.core.Application;
 import com.auth0.core.Auth0;
-import com.auth0.core.Connection;
 import com.auth0.core.DatabaseUser;
-import com.auth0.core.Strategy;
 import com.auth0.core.UserProfile;
+import com.auth0.java.core.Connection;
+import com.auth0.java.core.Strategy;
 
 import java.util.HashMap;
 import java.util.Map;

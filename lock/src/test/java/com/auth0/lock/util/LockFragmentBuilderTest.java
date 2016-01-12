@@ -30,8 +30,8 @@ import android.support.v4.app.Fragment;
 
 import com.auth0.android.BuildConfig;
 import com.auth0.core.Application;
-import com.auth0.core.Connection;
-import com.auth0.core.Strategy;
+import com.auth0.java.core.Connection;
+import com.auth0.java.core.Strategy;
 import com.auth0.lock.Configuration;
 import com.auth0.lock.Lock;
 import com.auth0.lock.fragment.DatabaseChangePasswordFragment;
@@ -58,7 +58,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 18, manifest = Config.NONE)
@@ -75,9 +75,11 @@ public class LockFragmentBuilderTest {
     @Mock
     private Strategy adStrategy;
     @Mock
-    private Connection databaseConnection;
+    private com.auth0.core.Connection databaseConnection;
     @Mock
     private Connection adConnection;
+    @Mock
+    private com.auth0.core.Connection adCoreConnection;
     @Mock
     private Lock lock;
     @Mock
@@ -127,22 +129,22 @@ public class LockFragmentBuilderTest {
         when(configuration.getEnterpriseStrategies()).thenReturn(Arrays.asList(adStrategy));
         when(configuration.getActiveDirectoryStrategy()).thenReturn(adStrategy);
         when(configuration.getSocialStrategies()).thenReturn(new ArrayList<Strategy>());
-        when(configuration.getDefaultActiveDirectoryConnection()).thenReturn(adConnection);
+        when(configuration.getDefaultActiveDirectoryConnection()).thenReturn(adCoreConnection);
         final Fragment root = builder.root();
         final Bundle arguments = root.getArguments();
         assertThat(arguments, is(notNullValue()));
-        Connection connection = arguments.getParcelable(DatabaseLoginFragment.AD_ENTERPRISE_CONNECTION_ARGUMENT);
-        assertThat(connection, equalTo(adConnection));
+        com.auth0.core.Connection connection = arguments.getParcelable(DatabaseLoginFragment.AD_ENTERPRISE_CONNECTION_ARGUMENT);
+        assertThat(connection, equalTo(adCoreConnection));
         assertThat(arguments.getBoolean(DatabaseLoginFragment.IS_MAIN_LOGIN_ARGUMENT), is(true));
     }
 
     @Test
     public void shouldSetArgumentsToEnterpriseLoginFragment() throws Exception {
-        final Fragment root = builder.enterpriseLoginWithConnection(adConnection);
+        final Fragment root = builder.enterpriseLoginWithConnection(adCoreConnection);
         final Bundle arguments = root.getArguments();
         assertThat(arguments, is(notNullValue()));
-        Connection connection = arguments.getParcelable(DatabaseLoginFragment.AD_ENTERPRISE_CONNECTION_ARGUMENT);
-        assertThat(connection, equalTo(adConnection));
+        com.auth0.core.Connection connection = arguments.getParcelable(DatabaseLoginFragment.AD_ENTERPRISE_CONNECTION_ARGUMENT);
+        assertThat(connection, equalTo(adCoreConnection));
         assertThat(arguments.getBoolean(DatabaseLoginFragment.IS_MAIN_LOGIN_ARGUMENT), is(false));
     }
 
@@ -176,7 +178,7 @@ public class LockFragmentBuilderTest {
         when(configuration.getSocialStrategies()).thenReturn(Arrays.asList(socialStrategy));
         final Fragment root = builder.root();
         assertThat(root.getArguments(), is(notNullValue()));
-        assertThat(root.getArguments().getParcelable(DatabaseLoginFragment.DEFAULT_CONNECTION_ARGUMENT), Matchers.<Parcelable>equalTo(adConnection));
+        assertThat(root.getArguments().getParcelable(DatabaseLoginFragment.DEFAULT_CONNECTION_ARGUMENT), Matchers.<Parcelable>equalTo(adCoreConnection));
     }
 
     public void shouldSetDefaultConnectionWithoutSocial() throws Exception {
@@ -185,7 +187,7 @@ public class LockFragmentBuilderTest {
         when(configuration.getSocialStrategies()).thenReturn(new ArrayList<Strategy>());
         final Fragment root = builder.root();
         assertThat(root.getArguments(), is(notNullValue()));
-        assertThat(root.getArguments().getParcelable(DatabaseLoginFragment.DEFAULT_CONNECTION_ARGUMENT), Matchers.<Parcelable>equalTo(adConnection));
+        assertThat(root.getArguments().getParcelable(DatabaseLoginFragment.DEFAULT_CONNECTION_ARGUMENT), Matchers.<Parcelable>equalTo(adCoreConnection));
     }
 
     @Test

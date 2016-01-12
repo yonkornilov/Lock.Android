@@ -25,83 +25,33 @@
 package com.auth0.api.internal;
 
 import android.os.Handler;
-import android.util.Log;
 
-import com.auth0.api.APIClientException;
-import com.auth0.api.ParameterizableRequest;
+import com.auth0.api.Request;
 import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.Application;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.HttpUrl;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+public class ApplicationInfoRequest extends HandledRequest<Application> implements Request<Application> {
 
-import java.io.IOException;
-import java.util.Map;
+    com.auth0.java.api.Request<com.auth0.java.core.Application> request;
 
-class ApplicationInfoRequest extends BaseRequest<Application> implements Callback {
-
-    private static final String TAG = ApplicationInfoRequest.class.getName();
-
-    public ApplicationInfoRequest(Handler handler, OkHttpClient client, HttpUrl url, ObjectMapper mapper) {
-        super(handler, url, client, mapper.reader(Application.class), null);
+    public ApplicationInfoRequest(Handler handler, com.auth0.java.api.Request<com.auth0.java.core.Application> request) {
+        super(handler);
+        this.request = request;
     }
 
     @Override
-    protected Request doBuildRequest(Request.Builder builder) {
-        final Request request = builder.build();
-        Log.v(TAG, "Fetching application info from " + request.urlString());
-        return request;
-    }
-
-    @Override
-    public void onFailure(com.squareup.okhttp.Request request, IOException e) {
-        postOnFailure(e);
-    }
-
-    @Override
-    public void onResponse(Response response) throws IOException {
-        if (!response.isSuccessful()) {
-            String message = "Received app info failed response with code " + response.code() + " and body " + response.body().string();
-            postOnFailure(new IOException(message));
-            return;
-        }
-        try {
-            String json = response.body().string();
-            JSONTokener tokenizer = new JSONTokener(json);
-            tokenizer.skipPast("Auth0.setClient(");
-            if (!tokenizer.more()) {
-                postOnFailure(tokenizer.syntaxError("Invalid App Info JSONP"));
-                return;
+    public void start(BaseCallback<Application> callback) {
+        setCallback(callback);
+        request.start(new com.auth0.java.api.callback.BaseCallback<com.auth0.java.core.Application>() {
+            @Override
+            public void onSuccess(final com.auth0.java.core.Application payload) {
+                postOnSuccess(new Application(payload));
             }
-            Object nextValue = tokenizer.nextValue();
-            if (!(nextValue instanceof JSONObject)) {
-                tokenizer.back();
-                postOnFailure(tokenizer.syntaxError("Invalid JSON value of App Info"));
+
+            @Override
+            public void onFailure(final Throwable error) {
+                postOnFailure(error);
             }
-            JSONObject jsonObject = (JSONObject) nextValue;
-            Log.d(TAG, "Obtained JSON object from JSONP: " + jsonObject);
-            Application app = getReader().readValue(jsonObject.toString());
-            postOnSuccess(app);
-        } catch (JSONException | IOException e) {
-            postOnFailure(new APIClientException("Failed to parse JSONP", e));
-        }
-    }
-
-    @Override
-    public ParameterizableRequest<Application> addParameters(Map<String, Object> parameters) {
-        return this;
-    }
-
-    @Override
-    public ParameterizableRequest<Application> addHeader(String name, String value) {
-        return this;
+        });
     }
 }

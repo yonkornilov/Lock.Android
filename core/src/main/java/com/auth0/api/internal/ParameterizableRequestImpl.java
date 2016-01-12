@@ -1,5 +1,5 @@
 /*
- * DelegationRequest.java
+ * Parameterizable.java
  *
  * Copyright (c) 2015 Auth0 (http://auth0.com)
  *
@@ -22,61 +22,61 @@
  * THE SOFTWARE.
  */
 
-package com.auth0.api.authentication;
+package com.auth0.api.internal;
 
 import android.os.Handler;
 
-import com.auth0.api.callback.RefreshIdTokenCallback;
+import com.auth0.api.ParameterizableRequest;
+import com.auth0.api.callback.BaseCallback;
 
 import java.util.Map;
 
 /**
- * Represent a delegation request for Auth0 tokens that will yield a new 'id_token'
+ * Defines a request that can be configured (payload and headers)
+ * @param <T>
  */
-public class DelegationRequest {
+public class ParameterizableRequestImpl<T> extends HandledRequest<T> implements ParameterizableRequest<T> {
 
-    Handler handler;
-    com.auth0.java.api.authentication.DelegationRequest request;
+    com.auth0.java.api.ParameterizableRequest<T> request;
 
-    DelegationRequest(Handler handler, com.auth0.java.api.authentication.DelegationRequest request) {
-        this.handler = handler;
+    public ParameterizableRequestImpl(Handler handler, com.auth0.java.api.ParameterizableRequest<T> request) {
+        super(handler);
         this.request = request;
     }
 
     /**
-     * Add additional parameters to be sent in the request
+     * Adds additional parameters to send in the request
      * @param parameters as a non-null dictionary
      * @return itself
      */
-    public DelegationRequest addParameters(Map<String, Object> parameters) {
+    public ParameterizableRequestImpl<T> addParameters(Map<String, Object> parameters) {
         request.addParameters(parameters);
         return this;
     }
 
     /**
-     * Performs the HTTP request against Auth0 API
-     * @param callback called either on success or failure
+     * Adds an additional header for the request
+     * @param name of the header
+     * @param value of the header
+     * @return itself
      */
-    public void start(final RefreshIdTokenCallback callback) {
-        request.start(new com.auth0.java.api.callback.RefreshIdTokenCallback() {
+    public ParameterizableRequestImpl<T> addHeader(String name, String value) {
+        request.addHeader(name, value);
+        return this;
+    }
+
+    @Override
+    public void start(BaseCallback<T> callback) {
+        setCallback(callback);
+        request.start(new com.auth0.java.api.callback.BaseCallback<T>() {
             @Override
-            public void onSuccess(final String idToken, final String tokenType, final int expiresIn) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.onSuccess(idToken, tokenType, expiresIn);
-                    }
-                });
+            public void onSuccess(final T payload) {
+                postOnSuccess(payload);
             }
 
             @Override
             public void onFailure(final Throwable error) {
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.onFailure(error);
-                    }
-                });
+                postOnFailure(error);
             }
         });
     }

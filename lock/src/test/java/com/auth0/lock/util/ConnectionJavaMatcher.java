@@ -1,5 +1,5 @@
 /*
- * DatabaseUser.java
+ * ConnectionMatcher.java
  *
  * Copyright (c) 2015 Auth0 (http://auth0.com)
  *
@@ -22,14 +22,36 @@
  * THE SOFTWARE.
  */
 
-package com.auth0.core;
+package com.auth0.lock.util;
 
-/**
- * Value holder for Database Sign Up operation
- */
-public class DatabaseUser extends com.auth0.java.core.DatabaseUser {
+import com.auth0.java.core.Connection;
 
-    public DatabaseUser(String email, String username, boolean emailVerified) {
-        super(email, username, emailVerified);
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+
+public class ConnectionJavaMatcher extends BaseMatcher<Connection> {
+
+    private final String name;
+
+    public ConnectionJavaMatcher(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public boolean matches(Object o) {
+        if (!(o instanceof Connection)) {
+            return false;
+        }
+        Connection connection = (Connection) o;
+        return name.equals(connection.getName());
+    }
+
+    @Override
+    public void describeTo(Description description) {
+        description.appendText("connection with name ").appendValue(this.name);
+    }
+
+    public static ConnectionJavaMatcher isConnection(String name) {
+        return new ConnectionJavaMatcher(name);
     }
 }

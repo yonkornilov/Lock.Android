@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.auth0.api.APIClient;
 import com.auth0.api.authentication.AuthenticationAPIClient;
 import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.Application;

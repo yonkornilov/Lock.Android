@@ -26,7 +26,7 @@ package com.auth0.lock;
 
 import com.auth0.core.Application;
 import com.auth0.core.Connection;
-import com.auth0.core.Strategy;
+import com.auth0.java.core.Strategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Before;
@@ -41,16 +41,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.auth0.core.Strategies.ActiveDirectory;
-import static com.auth0.core.Strategies.Facebook;
-import static com.auth0.core.Strategies.GoogleApps;
-import static com.auth0.core.Strategies.GooglePlus;
-import static com.auth0.core.Strategies.Instagram;
-import static com.auth0.core.Strategies.Twitter;
-import static com.auth0.core.Strategies.Yahoo;
-import static com.auth0.core.Strategies.Yammer;
-import static com.auth0.core.Strategies.Yandex;
-import static com.auth0.lock.util.ConnectionMatcher.isConnection;
+import static com.auth0.java.core.Strategies.ActiveDirectory;
+import static com.auth0.java.core.Strategies.Facebook;
+import static com.auth0.java.core.Strategies.GoogleApps;
+import static com.auth0.java.core.Strategies.GooglePlus;
+import static com.auth0.java.core.Strategies.Instagram;
+import static com.auth0.java.core.Strategies.Twitter;
+import static com.auth0.java.core.Strategies.Yahoo;
+import static com.auth0.java.core.Strategies.Yammer;
+import static com.auth0.java.core.Strategies.Yandex;
+import static com.auth0.lock.util.ConnectionJavaMatcher.isConnection;
 import static com.auth0.lock.util.StrategyMatcher.isStrategy;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -78,7 +78,8 @@ public class ConfigurationTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         ObjectMapper mapper = new ObjectMapper();
-        application = mapper.readValue(new File("src/test/resources/appinfo.json"), Application.class);
+        com.auth0.java.core.Application javaApplication = mapper.readValue(new File("src/test/resources/appinfo.json"), com.auth0.java.core.Application.class);
+        application = new Application(javaApplication);
     }
 
     @Test
@@ -208,9 +209,9 @@ public class ConfigurationTest {
 
     private Connection getConnectionByName(String name) {
         for (Strategy strategy : application.getStrategies()) {
-            for (Connection connection : strategy.getConnections()) {
+            for (com.auth0.java.core.Connection connection : strategy.getConnections()) {
                 if (connection.getName().equals(name)) {
-                    return connection;
+                    return new Connection(connection);
                 }
             }
         }

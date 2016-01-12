@@ -33,5 +33,4 @@ import com.auth0.api.callback.BaseCallback;
 public interface Request<T> {
 
     void start(BaseCallback<T> callback);
-
 }
