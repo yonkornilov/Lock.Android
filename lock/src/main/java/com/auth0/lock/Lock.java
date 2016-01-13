@@ -29,6 +29,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -622,6 +623,7 @@ public class Lock {
                 lock.apiClient.setClientInfo(clientInfo);
                 lock.defaultProvider.setClientInfo(clientInfo);
                 RequestFactory.setClientInfo(clientInfo);
+                RequestFactory.setUserAgent(String.format("Android %s (%s %s;)", Build.VERSION.RELEASE, Build.MODEL, Build.MANUFACTURER));
             }
             return lock;
         }

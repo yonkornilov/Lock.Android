@@ -29,10 +29,8 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.auth0.api.callback.BaseCallback;
-import com.auth0.api.internal.HandledRequest;
-import com.auth0.api.internal.RequestFactory;
 import com.auth0.api.internal.RequestImpl;
-import com.auth0.java.api.*;
+import com.auth0.java.api.internal.RequestFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.HttpUrl;
 import com.squareup.okhttp.OkHttpClient;

@@ -10,10 +10,15 @@ public abstract class HandledRequest<T> {
     private BaseCallback<T> callback;
 
     protected HandledRequest(Handler handler) {
-        this.handler = handler;
+        this(handler, null);
     }
 
-    public void setCallback(BaseCallback<T> callback) {
+    protected HandledRequest(Handler handler, BaseCallback<T> callback) {
+        this.handler = handler;
+        this.callback = callback;
+    }
+
+    protected void setCallback(BaseCallback<T> callback) {
         this.callback = callback;
     }
 

@@ -25,8 +25,9 @@
 package com.auth0.api;
 
 import android.net.Uri;
+import android.os.Build;
 
-import com.auth0.api.internal.RequestFactory;
+import com.auth0.java.api.internal.RequestFactory;
 
 @Deprecated
 abstract class BaseAPIClient {
@@ -71,5 +72,6 @@ abstract class BaseAPIClient {
 
     public void setClientInfo(String clientInfo) {
         RequestFactory.setClientInfo(clientInfo);
+        RequestFactory.setUserAgent(String.format("Android %s (%s %s;)", Build.VERSION.RELEASE, Build.MODEL, Build.MANUFACTURER));
     }
 }
