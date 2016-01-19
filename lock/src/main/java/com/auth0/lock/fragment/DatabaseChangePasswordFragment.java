@@ -35,6 +35,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.ParameterBuilder;
 import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.Connection;
@@ -145,7 +146,7 @@ public class DatabaseChangePasswordFragment extends BaseTitledFragment {
                     }
 
                     @Override
-                    public void onFailure(Throwable error) {
+                    public void onFailure(Auth0Exception error) {
                         bus.post(new AuthenticationError(R.string.com_auth0_db_change_password_error_title, R.string.com_auth0_db_change_password_error_message, error));
                         sendButton.setEnabled(true);
                         sendButton.setText(R.string.com_auth0_db_change_password_btn_text);

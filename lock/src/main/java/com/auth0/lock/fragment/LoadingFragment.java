@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.authentication.AuthenticationAPIClient;
 import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.Application;
@@ -72,7 +73,7 @@ public class LoadingFragment extends Fragment {
                     }
 
                     @Override
-                    public void onFailure(Throwable throwable) {
+                    public void onFailure(Auth0Exception throwable) {
                         Log.e(TAG, "Failed to fetch app info", throwable);
                         new AlertDialog.Builder(getActivity())
                                 .setTitle(R.string.com_auth0_application_load_failed_title)

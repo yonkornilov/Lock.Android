@@ -26,6 +26,7 @@ package com.auth0.api.internal;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.ParameterizableRequest;
 import com.auth0.api.callback.BaseCallback;
 
@@ -37,9 +38,9 @@ import java.util.Map;
  */
 public class ParameterizableRequestImpl<T> extends HandledRequest<T> implements ParameterizableRequest<T> {
 
-    com.auth0.java.api.ParameterizableRequest<T> request;
+    com.auth0.authentication.api.ParameterizableRequest<T> request;
 
-    public ParameterizableRequestImpl(Handler handler, com.auth0.java.api.ParameterizableRequest<T> request) {
+    public ParameterizableRequestImpl(Handler handler, com.auth0.authentication.api.ParameterizableRequest<T> request) {
         super(handler);
         this.request = request;
     }
@@ -68,14 +69,14 @@ public class ParameterizableRequestImpl<T> extends HandledRequest<T> implements 
     @Override
     public void start(BaseCallback<T> callback) {
         setCallback(callback);
-        request.start(new com.auth0.java.api.callback.BaseCallback<T>() {
+        request.start(new com.auth0.authentication.api.callback.BaseCallback<T>() {
             @Override
             public void onSuccess(final T payload) {
                 postOnSuccess(payload);
             }
 
             @Override
-            public void onFailure(final Throwable error) {
+            public void onFailure(final Auth0Exception error) {
                 postOnFailure(error);
             }
         });

@@ -29,7 +29,7 @@ import com.auth0.api.callback.RefreshIdTokenCallback;
 public class MockRefreshIdTokenCallback extends MockBaseCallback<String> implements RefreshIdTokenCallback {
 
     @Override
-    public void onSuccess(String idToken, String tokenType, int expiresIn) {
+    public void onSuccess(String idToken, String tokenType, Long expiresIn) {
         onSuccess(idToken);
     }
 

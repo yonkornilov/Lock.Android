@@ -26,15 +26,16 @@ package com.auth0.api.internal;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.Request;
 import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.Application;
 
 public class ApplicationInfoRequest extends HandledRequest<Application> implements Request<Application> {
 
-    com.auth0.java.api.Request<com.auth0.java.core.Application> request;
+    com.auth0.authentication.api.Request<com.auth0.Application> request;
 
-    public ApplicationInfoRequest(Handler handler, com.auth0.java.api.Request<com.auth0.java.core.Application> request) {
+    public ApplicationInfoRequest(Handler handler, com.auth0.authentication.api.Request<com.auth0.Application> request) {
         super(handler);
         this.request = request;
     }
@@ -42,14 +43,14 @@ public class ApplicationInfoRequest extends HandledRequest<Application> implemen
     @Override
     public void start(BaseCallback<Application> callback) {
         setCallback(callback);
-        request.start(new com.auth0.java.api.callback.BaseCallback<com.auth0.java.core.Application>() {
+        request.start(new com.auth0.authentication.api.callback.BaseCallback<com.auth0.Application>() {
             @Override
-            public void onSuccess(final com.auth0.java.core.Application payload) {
+            public void onSuccess(final com.auth0.Application payload) {
                 postOnSuccess(new Application(payload));
             }
 
             @Override
-            public void onFailure(final Throwable error) {
+            public void onFailure(final Auth0Exception error) {
                 postOnFailure(error);
             }
         });

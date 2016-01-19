@@ -27,7 +27,7 @@ package com.auth0.api;
 import android.net.Uri;
 import android.os.Build;
 
-import com.auth0.java.api.internal.RequestFactory;
+import com.auth0.authentication.api.internal.RequestFactory;
 
 @Deprecated
 abstract class BaseAPIClient {

@@ -38,6 +38,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.callback.RefreshIdTokenCallback;
 import com.auth0.core.Token;
 import com.auth0.core.UserProfile;
@@ -121,12 +122,12 @@ public class MyActivity extends AppCompatActivity {
                 lock.getAuthenticationAPIClient().delegationWithRefreshToken(token.getRefreshToken())
                         .start(new RefreshIdTokenCallback() {
                             @Override
-                            public void onSuccess(String idToken, String tokenType, int expiresIn) {
+                            public void onSuccess(String idToken, String tokenType, Long expiresIn) {
                                 Log.d(TAG, "User " + profile.getName() + " with new token " + idToken);
                             }
 
                             @Override
-                            public void onFailure(Throwable error) {
+                            public void onFailure(Auth0Exception error) {
                                 Log.e(TAG, "Failed to refresh JWT", error);
                             }
                         });

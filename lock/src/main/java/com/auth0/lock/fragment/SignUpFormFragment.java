@@ -37,6 +37,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.ParameterBuilder;
 import com.auth0.api.authentication.AuthenticationAPIClient;
 import com.auth0.api.callback.AuthenticationCallback;
@@ -214,7 +215,7 @@ public class SignUpFormFragment extends Fragment {
         }
 
         @Override
-        public void onFailure(Throwable error) {
+        public void onFailure(Auth0Exception error) {
             bus.post(errorBuilder.buildFrom(error));
             accessButton.setEnabled(true);
             accessButton.setText(R.string.com_auth0_db_login_btn_text);
@@ -249,7 +250,7 @@ public class SignUpFormFragment extends Fragment {
         }
 
         @Override
-        public void onFailure(Throwable error) {
+        public void onFailure(Auth0Exception error) {
             bus.post(errorBuilder.buildFrom(error));
             accessButton.setEnabled(true);
             accessButton.setText(R.string.com_auth0_db_login_btn_text);

@@ -6,13 +6,13 @@ import android.os.Parcelable;
 /**
  * Class that holds a user's token information.
  */
-public class Token extends com.auth0.java.core.Token implements Parcelable {
+public class Token extends com.auth0.Token implements Parcelable {
 
     public Token(String idToken, String accessToken, String type, String refreshToken) {
         super(idToken, accessToken, type, refreshToken);
     }
 
-    public Token(com.auth0.java.core.Token token) {
+    public Token(com.auth0.Token token) {
         super(token);
     }
 

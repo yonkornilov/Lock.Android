@@ -11,9 +11,9 @@ import java.util.Map;
 /**
  * Class that holds the information of a user's profile
  */
-public class UserProfile extends com.auth0.java.core.UserProfile implements Parcelable {
+public class UserProfile extends com.auth0.UserProfile implements Parcelable {
 
-    public UserProfile(com.auth0.java.core.UserProfile userProfile) {
+    public UserProfile(com.auth0.UserProfile userProfile) {
         super(userProfile);
     }
 

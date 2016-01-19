@@ -10,9 +10,9 @@ import java.util.Map;
 /**
  * Class with a Auth0 connection info
  */
-public class Connection extends com.auth0.java.core.Connection implements Parcelable {
+public class Connection extends com.auth0.Connection implements Parcelable {
 
-    public Connection(com.auth0.java.core.Connection connection) {
+    public Connection(com.auth0.Connection connection) {
         super(connection);
     }
 

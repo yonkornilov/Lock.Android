@@ -26,7 +26,10 @@ package com.auth0.api.authentication;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
+import com.auth0.api.callback.BaseCallback;
 import com.auth0.api.callback.RefreshIdTokenCallback;
+import com.auth0.authentication.Delegation;
 
 import java.util.Map;
 
@@ -36,9 +39,9 @@ import java.util.Map;
 public class DelegationRequest {
 
     Handler handler;
-    com.auth0.java.api.authentication.DelegationRequest request;
+    com.auth0.authentication.DelegationRequest<Delegation> request;
 
-    DelegationRequest(Handler handler, com.auth0.java.api.authentication.DelegationRequest request) {
+    DelegationRequest(Handler handler, com.auth0.authentication.DelegationRequest<Delegation> request) {
         this.handler = handler;
         this.request = request;
     }
@@ -58,19 +61,19 @@ public class DelegationRequest {
      * @param callback called either on success or failure
      */
     public void start(final RefreshIdTokenCallback callback) {
-        request.start(new com.auth0.java.api.callback.RefreshIdTokenCallback() {
+        request.start(new BaseCallback<Delegation>() {
             @Override
-            public void onSuccess(final String idToken, final String tokenType, final int expiresIn) {
+            public void onSuccess(final Delegation payload) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        callback.onSuccess(idToken, tokenType, expiresIn);
+                        callback.onSuccess(payload.getIdToken(), payload.getType(), payload.getExpiresIn());
                     }
                 });
             }
 
             @Override
-            public void onFailure(final Throwable error) {
+            public void onFailure(final Auth0Exception error) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

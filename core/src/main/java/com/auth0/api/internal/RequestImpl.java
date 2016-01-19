@@ -26,6 +26,7 @@ package com.auth0.api.internal;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.Request;
 import com.auth0.api.callback.BaseCallback;
 
@@ -35,23 +36,23 @@ import com.auth0.api.callback.BaseCallback;
  */
 public class RequestImpl<T> extends HandledRequest<T> implements Request<T> {
 
-    protected com.auth0.java.api.Request<T> request;
+    protected com.auth0.authentication.api.Request<T> request;
 
-    public RequestImpl(Handler handler, com.auth0.java.api.Request<T> request) {
+    public RequestImpl(Handler handler, com.auth0.authentication.api.Request<T> request) {
         super(handler);
         this.request = request;
     }
 
     public void start(final BaseCallback<T> callback) {
         setCallback(callback);
-        request.start(new com.auth0.java.api.callback.BaseCallback<T>() {
+        request.start(new com.auth0.authentication.api.callback.BaseCallback<T>() {
             @Override
             public void onSuccess(final T payload) {
                 postOnSuccess(payload);
             }
 
             @Override
-            public void onFailure(final Throwable error) {
+            public void onFailure(final Auth0Exception error) {
                 postOnFailure(error);
             }
         });

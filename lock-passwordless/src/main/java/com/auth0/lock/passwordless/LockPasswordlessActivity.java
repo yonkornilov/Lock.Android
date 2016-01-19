@@ -32,6 +32,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.ParameterizableRequest;
 import com.auth0.api.authentication.AuthenticationAPIClient;
 import com.auth0.api.authentication.AuthenticationRequest;
@@ -383,7 +384,7 @@ public class LockPasswordlessActivity extends FragmentActivity {
             }
 
             @Override
-            public void onFailure(Throwable throwable) {
+            public void onFailure(Auth0Exception throwable) {
                 bus.post(errorBuilder.buildFrom(throwable));
             }
         };
@@ -426,7 +427,7 @@ public class LockPasswordlessActivity extends FragmentActivity {
             }
 
             @Override
-            public void onFailure(Throwable error) {
+            public void onFailure(Auth0Exception error) {
                 bus.post(new AuthenticationError(title, message, error));
             }
         };

@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Builder class for Auth API parameters.
  */
-public class ParameterBuilder extends com.auth0.java.api.ParameterBuilder {
+public class ParameterBuilder extends com.auth0.authentication.api.ParameterBuilder {
 
     public ParameterBuilder() {
         super();

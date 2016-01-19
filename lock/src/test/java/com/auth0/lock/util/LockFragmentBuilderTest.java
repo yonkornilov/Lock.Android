@@ -30,8 +30,8 @@ import android.support.v4.app.Fragment;
 
 import com.auth0.android.BuildConfig;
 import com.auth0.core.Application;
-import com.auth0.java.core.Connection;
-import com.auth0.java.core.Strategy;
+import com.auth0.Connection;
+import com.auth0.Strategy;
 import com.auth0.lock.Configuration;
 import com.auth0.lock.Lock;
 import com.auth0.lock.fragment.DatabaseChangePasswordFragment;

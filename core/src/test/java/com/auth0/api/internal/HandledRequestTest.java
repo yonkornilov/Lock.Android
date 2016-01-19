@@ -26,6 +26,7 @@ package com.auth0.api.internal;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.android.BuildConfig;
 import com.auth0.api.callback.BaseCallback;
 
@@ -54,7 +55,7 @@ public class HandledRequestTest {
     @Mock
     private BaseCallback<String> callback;
     @Mock
-    private Throwable throwable;
+    private Auth0Exception throwable;
     @Captor
     private ArgumentCaptor<Runnable> captor;
 

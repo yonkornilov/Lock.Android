@@ -26,7 +26,7 @@ package com.auth0.lock;
 
 import com.auth0.api.APIClient;
 import com.auth0.core.Auth0;
-import com.auth0.java.core.Strategies;
+import com.auth0.Strategies;
 import com.auth0.identity.IdentityProvider;
 import com.auth0.identity.WebIdentityProvider;
 

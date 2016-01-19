@@ -25,9 +25,8 @@
 package com.auth0.core;
 
 import com.auth0.api.APIClient;
-import com.auth0.api.authentication.AuthenticationAPIClient;
 
-public class Auth0 extends com.auth0.java.core.Auth0 {
+public class Auth0 extends com.auth0.Auth0 {
 
     public Auth0(String clientId, String domain) {
         super(clientId, domain);

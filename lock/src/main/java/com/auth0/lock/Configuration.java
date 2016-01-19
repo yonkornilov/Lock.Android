@@ -28,8 +28,8 @@ import android.support.annotation.NonNull;
 
 import com.auth0.core.Application;
 import com.auth0.core.Connection;
-import com.auth0.java.core.Strategies;
-import com.auth0.java.core.Strategy;
+import com.auth0.Strategies;
+import com.auth0.Strategy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -93,9 +93,9 @@ public class Configuration {
         if (databaseStrategy == null) {
             return null;
         }
-        List<com.auth0.java.core.Connection> list = databaseStrategy.getConnections();
+        List<com.auth0.Connection> list = databaseStrategy.getConnections();
         List<Connection> dbs = new ArrayList<>(list.size());
-        for (com.auth0.java.core.Connection conn : list) {
+        for (com.auth0.Connection conn : list) {
             dbs.add(new Connection(conn));
         }
         Set<String> set = new HashSet<>(connections);
@@ -116,8 +116,8 @@ public class Configuration {
         if (strategy == null || connections.isEmpty()) {
             return strategy;
         }
-        List<com.auth0.java.core.Connection> filtered = new ArrayList<>(strategy.getConnections().size());
-        for (com.auth0.java.core.Connection connection : strategy.getConnections()) {
+        List<com.auth0.Connection> filtered = new ArrayList<>(strategy.getConnections().size());
+        for (com.auth0.Connection connection : strategy.getConnections()) {
             if (connections.contains(connection.getName())) {
                 filtered.add(connection);
             }
@@ -163,7 +163,7 @@ public class Configuration {
         if (activeDirectoryStrategy == null) {
             return null;
         }
-        final List<com.auth0.java.core.Connection> connections = activeDirectoryStrategy.getConnections();
+        final List<com.auth0.Connection> connections = activeDirectoryStrategy.getConnections();
         return !connections.isEmpty() ? new Connection(connections.get(0)) : null;
     }
 }

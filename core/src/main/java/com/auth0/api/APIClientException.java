@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * Internal exception raised when a request to the API fails
  */
-public class APIClientException extends com.auth0.java.api.APIClientException {
+public class APIClientException extends com.auth0.authentication.api.APIException {
     public APIClientException(String detailMessage, Throwable throwable) {
         super(detailMessage, throwable);
     }

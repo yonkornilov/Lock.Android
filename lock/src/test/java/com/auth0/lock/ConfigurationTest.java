@@ -26,7 +26,7 @@ package com.auth0.lock;
 
 import com.auth0.core.Application;
 import com.auth0.core.Connection;
-import com.auth0.java.core.Strategy;
+import com.auth0.Strategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Before;
@@ -41,15 +41,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.auth0.java.core.Strategies.ActiveDirectory;
-import static com.auth0.java.core.Strategies.Facebook;
-import static com.auth0.java.core.Strategies.GoogleApps;
-import static com.auth0.java.core.Strategies.GooglePlus;
-import static com.auth0.java.core.Strategies.Instagram;
-import static com.auth0.java.core.Strategies.Twitter;
-import static com.auth0.java.core.Strategies.Yahoo;
-import static com.auth0.java.core.Strategies.Yammer;
-import static com.auth0.java.core.Strategies.Yandex;
+import static com.auth0.Strategies.ActiveDirectory;
+import static com.auth0.Strategies.Facebook;
+import static com.auth0.Strategies.GoogleApps;
+import static com.auth0.Strategies.GooglePlus;
+import static com.auth0.Strategies.Instagram;
+import static com.auth0.Strategies.Twitter;
+import static com.auth0.Strategies.Yahoo;
+import static com.auth0.Strategies.Yammer;
+import static com.auth0.Strategies.Yandex;
 import static com.auth0.lock.util.ConnectionJavaMatcher.isConnection;
 import static com.auth0.lock.util.StrategyMatcher.isStrategy;
 import static org.hamcrest.Matchers.contains;
@@ -78,7 +78,7 @@ public class ConfigurationTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         ObjectMapper mapper = new ObjectMapper();
-        com.auth0.java.core.Application javaApplication = mapper.readValue(new File("src/test/resources/appinfo.json"), com.auth0.java.core.Application.class);
+        com.auth0.Application javaApplication = mapper.readValue(new File("src/test/resources/appinfo.json"), com.auth0.Application.class);
         application = new Application(javaApplication);
     }
 
@@ -209,7 +209,7 @@ public class ConfigurationTest {
 
     private Connection getConnectionByName(String name) {
         for (Strategy strategy : application.getStrategies()) {
-            for (com.auth0.java.core.Connection connection : strategy.getConnections()) {
+            for (com.auth0.Connection connection : strategy.getConnections()) {
                 if (connection.getName().equals(name)) {
                     return new Connection(connection);
                 }

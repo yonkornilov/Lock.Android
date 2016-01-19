@@ -10,6 +10,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.WindowManager;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.callback.AuthenticationCallback;
 import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.Application;
@@ -86,6 +87,7 @@ public class LockActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate: savedInstanceState="+savedInstanceState);
         super.onCreate(savedInstanceState);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         setContentView(R.layout.com_auth0_activity_lock);
@@ -105,18 +107,21 @@ public class LockActivity extends FragmentActivity {
 
     @Override
     protected void onStart() {
+        Log.d(TAG, "onStart");
         super.onStart();
         lock.resetAllProviders();
     }
 
     @Override
     protected void onStop() {
+        Log.d(TAG, "onStop");
         super.onStop();
         lock.resetAllProviders();
     }
 
     @Override
     protected void onResume() {
+        Log.d(TAG, "onResume");
         super.onResume();
         final Uri uri = getIntent().getData();
         Log.v(TAG, "Resuming activity with data " + uri);
@@ -150,6 +155,7 @@ public class LockActivity extends FragmentActivity {
 
     @Override
     protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
         identity = null;
         dismissProgressDialog();
         this.lock.getBus().unregister(this);
@@ -294,7 +300,7 @@ public class LockActivity extends FragmentActivity {
                     }
 
                     @Override
-                    public void onFailure(Throwable error) {
+                    public void onFailure(Auth0Exception error) {
                         lock.getBus().post(new LoginAuthenticationErrorBuilder().buildFrom(error));
                     }
                 });
@@ -313,7 +319,7 @@ public class LockActivity extends FragmentActivity {
                     }
 
                     @Override
-                    public void onFailure(Throwable error) {
+                    public void onFailure(Auth0Exception error) {
                         lock.getBus().post(new LoginAuthenticationErrorBuilder().buildFrom(error));
                     }
                 });

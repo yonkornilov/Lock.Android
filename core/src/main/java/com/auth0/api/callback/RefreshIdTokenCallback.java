@@ -27,6 +27,12 @@ package com.auth0.api.callback;
 /**
  * Callback used in delegation api request for a new Auth0 id_token
  */
-public interface RefreshIdTokenCallback extends com.auth0.java.api.callback.RefreshIdTokenCallback {
-
+public interface RefreshIdTokenCallback extends com.auth0.authentication.api.callback.Callback {
+    /**
+     * Called in successful delegation api call with new id_token
+     * @param idToken new id_token.
+     * @param tokenType type of token.
+     * @param expiresIn when the token expires.
+     */
+    void onSuccess(String idToken, String tokenType, Long expiresIn);
 }

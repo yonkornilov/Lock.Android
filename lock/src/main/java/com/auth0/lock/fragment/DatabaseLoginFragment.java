@@ -38,6 +38,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.ParameterBuilder;
 import com.auth0.api.callback.AuthenticationCallback;
 import com.auth0.core.Connection;
@@ -250,7 +251,7 @@ public class DatabaseLoginFragment extends BaseTitledFragment {
     }
 
     private void login() {
-        final com.auth0.java.core.Connection javaConnection = matcher.getConnection();
+        final com.auth0.Connection javaConnection = matcher.getConnection();
         if (javaConnection != null) {
             final Connection connection = new Connection(javaConnection);
             final Configuration configuration = LockContext.getLock(getActivity()).getConfiguration();
@@ -294,7 +295,7 @@ public class DatabaseLoginFragment extends BaseTitledFragment {
                     }
 
                     @Override
-                    public void onFailure(Throwable throwable) {
+                    public void onFailure(Auth0Exception throwable) {
                         bus.post(errorBuilder.buildFrom(throwable));
                         accessButton.setEnabled(true);
                         accessButton.setText(R.string.com_auth0_db_login_btn_text);

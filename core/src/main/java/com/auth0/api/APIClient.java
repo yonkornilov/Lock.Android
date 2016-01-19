@@ -1,5 +1,6 @@
 package com.auth0.api;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.authentication.AuthenticationAPIClient;
 import com.auth0.api.callback.AuthenticationCallback;
 import com.auth0.api.callback.BaseCallback;
@@ -8,8 +9,8 @@ import com.auth0.core.Application;
 import com.auth0.core.Auth0;
 import com.auth0.core.DatabaseUser;
 import com.auth0.core.UserProfile;
-import com.auth0.java.core.Connection;
-import com.auth0.java.core.Strategy;
+import com.auth0.Connection;
+import com.auth0.Strategy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -75,7 +76,7 @@ public class APIClient extends BaseAPIClient {
                     }
 
                     @Override
-                    public void onFailure(Throwable error) {
+                    public void onFailure(Auth0Exception error) {
                         callback.onFailure(error);
                     }
                 });
@@ -208,7 +209,7 @@ public class APIClient extends BaseAPIClient {
                     }
 
                     @Override
-                    public void onFailure(Throwable error) {
+                    public void onFailure(Auth0Exception error) {
                         callback.onFailure(error);
                     }
                 });
@@ -235,7 +236,7 @@ public class APIClient extends BaseAPIClient {
                     }
 
                     @Override
-                    public void onFailure(Throwable error) {
+                    public void onFailure(Auth0Exception error) {
                         callback.onFailure(error);
                     }
                 });

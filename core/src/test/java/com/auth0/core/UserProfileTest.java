@@ -1,7 +1,7 @@
 package com.auth0.core;
 
 import com.auth0.android.BuildConfig;
-import com.auth0.java.core.UserIdentity;
+import com.auth0.UserIdentity;
 
 import org.junit.Rule;
 import org.junit.Test;

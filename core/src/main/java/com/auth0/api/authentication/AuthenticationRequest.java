@@ -26,7 +26,10 @@ package com.auth0.api.authentication;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.callback.AuthenticationCallback;
+import com.auth0.api.callback.BaseCallback;
+import com.auth0.authentication.Authentication;
 import com.auth0.core.Token;
 import com.auth0.core.UserProfile;
 
@@ -38,9 +41,9 @@ import java.util.Map;
 public class AuthenticationRequest {
 
     Handler handler;
-    com.auth0.java.api.authentication.AuthenticationRequest request;
+    com.auth0.authentication.AuthenticationRequest request;
 
-    protected AuthenticationRequest(Handler handler, com.auth0.java.api.authentication.AuthenticationRequest request) {
+    protected AuthenticationRequest(Handler handler, com.auth0.authentication.AuthenticationRequest request) {
         this.handler = handler;
         this.request = request;
     }
@@ -80,19 +83,19 @@ public class AuthenticationRequest {
      * @param callback called on either success or failure
      */
     public void start(final AuthenticationCallback callback) {
-        request.start(new com.auth0.java.api.callback.AuthenticationCallback() {
+        request.start(new BaseCallback<Authentication>() {
             @Override
-            public void onSuccess(final com.auth0.java.core.UserProfile profile, final com.auth0.java.core.Token token) {
+            public void onSuccess(final Authentication authentication) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        callback.onSuccess(new UserProfile(profile), new Token(token));
+                        callback.onSuccess(new UserProfile(authentication.getProfile()), new Token(authentication.getToken()));
                     }
                 });
             }
 
             @Override
-            public void onFailure(final Throwable error) {
+            public void onFailure(final Auth0Exception error) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {

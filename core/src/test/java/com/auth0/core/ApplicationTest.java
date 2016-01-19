@@ -1,9 +1,9 @@
 package com.auth0.core;
 
 import com.auth0.android.BuildConfig;
-import com.auth0.java.core.Connection;
-import com.auth0.java.core.Strategies;
-import com.auth0.java.core.Strategy;
+import com.auth0.Connection;
+import com.auth0.Strategies;
+import com.auth0.Strategy;
 import com.google.common.collect.Lists;
 
 import org.junit.Test;
@@ -14,12 +14,12 @@ import org.robolectric.annotation.Config;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.auth0.java.core.Strategies.ADFS;
-import static com.auth0.java.core.Strategies.Auth0;
-import static com.auth0.java.core.Strategies.Facebook;
-import static com.auth0.java.core.Strategies.Office365;
-import static com.auth0.java.core.Strategies.SAMLP;
-import static com.auth0.java.core.Strategies.Twitter;
+import static com.auth0.Strategies.ADFS;
+import static com.auth0.Strategies.Auth0;
+import static com.auth0.Strategies.Facebook;
+import static com.auth0.Strategies.Office365;
+import static com.auth0.Strategies.SAMLP;
+import static com.auth0.Strategies.Twitter;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;

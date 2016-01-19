@@ -28,7 +28,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import com.auth0.core.Connection;
-import com.auth0.java.core.Strategy;
+import com.auth0.Strategy;
 import com.auth0.lock.Configuration;
 import com.auth0.lock.Lock;
 import com.auth0.lock.fragment.BaseTitledFragment;

@@ -24,7 +24,7 @@
 
 package com.auth0.lock.util;
 
-import com.auth0.java.core.Connection;
+import com.auth0.Connection;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;

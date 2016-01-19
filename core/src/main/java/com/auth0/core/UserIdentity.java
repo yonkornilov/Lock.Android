@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Class that holds the information from a Identity Provider like Facebook or Twitter.
  */
-public class UserIdentity extends com.auth0.java.core.UserIdentity implements Parcelable {
+public class UserIdentity extends com.auth0.UserIdentity implements Parcelable {
 
     @SuppressWarnings("unchecked")
     protected UserIdentity(Parcel in) {

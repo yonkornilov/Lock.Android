@@ -41,8 +41,8 @@ import com.auth0.core.Auth0;
 import com.auth0.identity.IdentityProvider;
 import com.auth0.identity.WebIdentityProvider;
 import com.auth0.identity.web.CallbackParser;
-import com.auth0.java.api.internal.RequestFactory;
-import com.auth0.java.core.Strategies;
+import com.auth0.authentication.api.internal.RequestFactory;
+import com.auth0.Strategies;
 import com.auth0.lock.credentials.CredentialStore;
 import com.auth0.lock.credentials.NullCredentialStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -219,7 +219,7 @@ public class Lock {
     /**
      * Set a native handler for a specific Identity Provider (IdP), e.g.: Facebook
      *
-     * @param serviceName name of the Auth0 strategy to handle. (For all valid values check {@link com.auth0.java.core.Strategies}
+     * @param serviceName name of the Auth0 strategy to handle. (For all valid values check {@link Strategies}
      * @param provider    IdP handler
      * @deprecated use {@link com.auth0.lock.Lock.Builder#withIdentityProvider(Strategies, IdentityProvider)} instead
      */
@@ -578,7 +578,7 @@ public class Lock {
         /**
          * Sets a native handler for a specific Identity Provider (IdP), e.g.: Facebook
          *
-         * @param strategy Auth0 strategy to handle. (For all valid values check {@link com.auth0.java.core.Strategies}
+         * @param strategy Auth0 strategy to handle. (For all valid values check {@link Strategies}
          * @param identityProvider IdP handler
          * @return the Builder instance being used
          */

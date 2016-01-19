@@ -27,7 +27,7 @@ package com.auth0.core;
 /**
  * Value holder for Database Sign Up operation
  */
-public class DatabaseUser extends com.auth0.java.core.DatabaseUser {
+public class DatabaseUser extends com.auth0.DatabaseUser {
 
     public DatabaseUser(String email, String username, boolean emailVerified) {
         super(email, username, emailVerified);

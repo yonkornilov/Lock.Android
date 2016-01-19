@@ -35,6 +35,7 @@ import com.auth0.api.internal.ParameterizableRequestImpl;
 import com.auth0.api.internal.RequestImpl;
 import com.auth0.api.internal.TokenRequest;
 import com.auth0.api.internal.UserProfileRequest;
+import com.auth0.authentication.PasswordlessType;
 import com.auth0.core.Application;
 import com.auth0.core.Auth0;
 import com.auth0.core.DatabaseUser;
@@ -50,13 +51,13 @@ import java.util.Map;
 public class AuthenticationAPIClient {
 
     private final Handler handler;
-    private final com.auth0.java.api.authentication.AuthenticationAPIClient apiClient;
+    private final com.auth0.authentication.AuthenticationAPIClient apiClient;
 
-    public AuthenticationAPIClient(com.auth0.java.api.authentication.AuthenticationAPIClient apiClient) {
+    public AuthenticationAPIClient(com.auth0.authentication.AuthenticationAPIClient apiClient) {
         this(apiClient, new Handler(Looper.getMainLooper()));
     }
 
-    public AuthenticationAPIClient(com.auth0.java.api.authentication.AuthenticationAPIClient apiClient, Handler handler) {
+    public AuthenticationAPIClient(com.auth0.authentication.AuthenticationAPIClient apiClient, Handler handler) {
         this.apiClient = apiClient;
         this.handler = handler;
     }
@@ -66,7 +67,7 @@ public class AuthenticationAPIClient {
      * @param auth0 account information
      */
     public AuthenticationAPIClient(Auth0 auth0) {
-        this(new com.auth0.java.api.authentication.AuthenticationAPIClient(auth0), new Handler(Looper.getMainLooper()));
+        this(new com.auth0.authentication.AuthenticationAPIClient(auth0), new Handler(Looper.getMainLooper()));
     }
 
     /**
@@ -75,7 +76,7 @@ public class AuthenticationAPIClient {
      * @param handler where callback will be called with either the response or error from the server
      */
     public AuthenticationAPIClient(Auth0 auth0, Handler handler) {
-        this(new com.auth0.java.api.authentication.AuthenticationAPIClient(auth0), handler);
+        this(new com.auth0.authentication.AuthenticationAPIClient(auth0), handler);
     }
 
     /**
@@ -221,7 +222,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public ParameterizableRequest<Void> changePassword(String email, String newPassword) {
-        return new ParameterizableRequestImpl<>(handler, apiClient.changePassword(email, newPassword));
+        return new ParameterizableRequestImpl<>(handler, apiClient.changePassword(email).setNewPassword(newPassword));
     }
 
     /**
@@ -276,7 +277,8 @@ public class AuthenticationAPIClient {
      * @return a request to configure and start
      */
     public ParameterizableRequest<Void> passwordlessWithEmail(String email, boolean useMagicLink) {
-        return new ParameterizableRequestImpl<>(handler, apiClient.passwordlessWithEmail(email, useMagicLink));
+        return new ParameterizableRequestImpl<>(handler, apiClient.passwordlessWithEmail(email,
+                useMagicLink ? PasswordlessType.LINK_ANDROID : PasswordlessType.CODE));
     }
 
     /**
@@ -286,6 +288,7 @@ public class AuthenticationAPIClient {
      * @return a request to configure and stat
      */
     public ParameterizableRequest<Void> passwordlessWithSMS(String phoneNumber, boolean useMagicLink) {
-        return new ParameterizableRequestImpl<>(handler, apiClient.passwordlessWithSMS(phoneNumber, useMagicLink));
+        return new ParameterizableRequestImpl<>(handler, apiClient.passwordlessWithSMS(phoneNumber,
+                useMagicLink ? PasswordlessType.LINK_ANDROID : PasswordlessType.CODE));
     }
 }

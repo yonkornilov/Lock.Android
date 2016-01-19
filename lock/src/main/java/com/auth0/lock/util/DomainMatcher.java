@@ -24,9 +24,9 @@
 
 package com.auth0.lock.util;
 
-import com.auth0.java.core.Connection;
-import com.auth0.java.core.Strategies;
-import com.auth0.java.core.Strategy;
+import com.auth0.Connection;
+import com.auth0.Strategies;
+import com.auth0.Strategy;
 
 import java.util.HashMap;
 import java.util.List;

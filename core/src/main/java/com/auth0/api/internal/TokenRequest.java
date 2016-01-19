@@ -2,6 +2,7 @@ package com.auth0.api.internal;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.ParameterizableRequest;
 import com.auth0.core.Token;
 import com.auth0.api.callback.BaseCallback;
@@ -10,9 +11,9 @@ import java.util.Map;
 
 public class TokenRequest extends HandledRequest<Token> implements ParameterizableRequest<Token> {
 
-    com.auth0.java.api.ParameterizableRequest<com.auth0.java.core.Token> request;
+    com.auth0.authentication.api.ParameterizableRequest<com.auth0.Token> request;
 
-    public TokenRequest(Handler handler, com.auth0.java.api.ParameterizableRequest<com.auth0.java.core.Token> request) {
+    public TokenRequest(Handler handler, com.auth0.authentication.api.ParameterizableRequest<com.auth0.Token> request) {
         super(handler);
         this.request = request;
     }
@@ -32,14 +33,14 @@ public class TokenRequest extends HandledRequest<Token> implements Parameterizab
     @Override
     public void start(BaseCallback<Token> callback) {
         setCallback(callback);
-        request.start(new com.auth0.java.api.callback.BaseCallback<com.auth0.java.core.Token>() {
+        request.start(new com.auth0.authentication.api.callback.BaseCallback<com.auth0.Token>() {
             @Override
-            public void onSuccess(final com.auth0.java.core.Token payload) {
+            public void onSuccess(final com.auth0.Token payload) {
                 postOnSuccess(new Token(payload));
             }
 
             @Override
-            public void onFailure(final Throwable error) {
+            public void onFailure(final Auth0Exception error) {
                 postOnFailure(error);
             }
         });

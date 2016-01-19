@@ -3,6 +3,7 @@ package com.auth0.api.internal;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.ParameterizableRequest;
 import com.auth0.api.callback.BaseCallback;
 import com.auth0.core.DatabaseUser;
@@ -11,9 +12,9 @@ import java.util.Map;
 
 public class DatabaseUserRequest extends HandledRequest<DatabaseUser> implements ParameterizableRequest<DatabaseUser> {
 
-    com.auth0.java.api.ParameterizableRequest<com.auth0.java.core.DatabaseUser> request;
+    com.auth0.authentication.api.ParameterizableRequest<com.auth0.DatabaseUser> request;
 
-    public DatabaseUserRequest(Handler handler, com.auth0.java.api.ParameterizableRequest<com.auth0.java.core.DatabaseUser> request) {
+    public DatabaseUserRequest(Handler handler, com.auth0.authentication.api.ParameterizableRequest<com.auth0.DatabaseUser> request) {
         super(handler);
         this.request = request;
     }
@@ -33,14 +34,14 @@ public class DatabaseUserRequest extends HandledRequest<DatabaseUser> implements
     @Override
     public void start(BaseCallback<DatabaseUser> callback) {
         setCallback(callback);
-        request.start(new com.auth0.java.api.callback.BaseCallback<com.auth0.java.core.DatabaseUser>() {
+        request.start(new com.auth0.authentication.api.callback.BaseCallback<com.auth0.DatabaseUser>() {
             @Override
-            public void onSuccess(final com.auth0.java.core.DatabaseUser payload) {
+            public void onSuccess(final com.auth0.DatabaseUser payload) {
                 postOnSuccess(new DatabaseUser(payload.getEmail(), payload.getUsername(), payload.isEmailVerified()));
             }
 
             @Override
-            public void onFailure(final Throwable error) {
+            public void onFailure(final Auth0Exception error) {
                 postOnFailure(error);
             }
         });

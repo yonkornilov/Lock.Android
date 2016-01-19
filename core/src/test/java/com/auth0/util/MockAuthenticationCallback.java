@@ -24,6 +24,7 @@
 
 package com.auth0.util;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.callback.AuthenticationCallback;
 import com.auth0.core.Token;
 import com.auth0.core.UserProfile;
@@ -34,7 +35,7 @@ public class MockAuthenticationCallback implements AuthenticationCallback {
 
     private Token token;
     private UserProfile profile;
-    private Throwable error;
+    private Auth0Exception error;
 
     @Override
     public void onSuccess(UserProfile profile, Token token) {
@@ -43,7 +44,7 @@ public class MockAuthenticationCallback implements AuthenticationCallback {
     }
 
     @Override
-    public void onFailure(Throwable error) {
+    public void onFailure(Auth0Exception error) {
         this.error = error;
     }
 
@@ -65,10 +66,10 @@ public class MockAuthenticationCallback implements AuthenticationCallback {
         };
     }
 
-    public Callable<Throwable> error() {
-        return new Callable<Throwable>() {
+    public Callable<Auth0Exception> error() {
+        return new Callable<Auth0Exception>() {
             @Override
-            public Throwable call() throws Exception {
+            public Auth0Exception call() throws Exception {
                 return error;
             }
         };

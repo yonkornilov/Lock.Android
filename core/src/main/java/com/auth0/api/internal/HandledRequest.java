@@ -2,6 +2,7 @@ package com.auth0.api.internal;
 
 import android.os.Handler;
 
+import com.auth0.Auth0Exception;
 import com.auth0.api.callback.BaseCallback;
 
 public abstract class HandledRequest<T> {
@@ -31,7 +32,7 @@ public abstract class HandledRequest<T> {
         });
     }
 
-    protected void postOnFailure(final Throwable error) {
+    protected void postOnFailure(final Auth0Exception error) {
         handler.post(new Runnable() {
             @Override
             public void run() {
