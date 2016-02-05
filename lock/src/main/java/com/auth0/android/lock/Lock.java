@@ -50,7 +50,8 @@ public class Lock {
     private AuthenticationCallback callback;
     private final Options options;
 
-    public static final String OPTIONS_EXTRA = "com.auth0.android.lock.key.Options";
+    public static final String OPTIONS_EXTRA = "com.auth0.android.lock.extra.Options";
+    public static final String USER_APPLICATION_EXTRA = "com.auth0.android.lock.extra.UserApplication";
 
     static final String AUTHENTICATION_ACTION = "com.auth0.android.lock.action.Authentication";
     static final String CANCELED_ACTION = "com.auth0.android.lock.action.Canceled";
@@ -77,9 +78,15 @@ public class Lock {
         }
     };
 
+    private String userApplication;
+
     private Lock(Options options, AuthenticationCallback callback) {
         this.options = options;
         this.callback = callback;
+    }
+
+    public ApplicationBuilder getApplicationBuilder() {
+        return ApplicationBuilder.newBuilder(options.getAccount());
     }
 
     public Options getOptions() {
@@ -88,6 +95,10 @@ public class Lock {
 
     public static Builder newBuilder() {
         return new Lock.Builder();
+    }
+
+    public void setApplication(String application) {
+        userApplication = application;
     }
 
     /**
@@ -99,6 +110,7 @@ public class Lock {
     public Intent newIntent(Activity activity) {
         Intent lockIntent = new Intent(activity, LockActivity.class);
         lockIntent.putExtra(OPTIONS_EXTRA, options);
+        lockIntent.putExtra(USER_APPLICATION_EXTRA, userApplication);
         return lockIntent;
     }
 
@@ -241,7 +253,7 @@ public class Lock {
             return this;
         }
 
-        public Builder loginAfterSignUp(boolean login){
+        public Builder loginAfterSignUp(boolean login) {
             options.setLoginAfterSignUp(login);
             return this;
         }

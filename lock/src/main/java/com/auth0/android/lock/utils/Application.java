@@ -63,6 +63,31 @@ public class Application {
         databaseStrategy = application.databaseStrategy;
     }
 
+    public Application(String id, String authorizeURL, List<Strategy> strategies) {
+        checkArgument(id != null, "id must be non-null");
+        checkArgument(authorizeURL != null, "authorize must be non-null");
+        checkArgument(strategies != null && strategies.size() > 0, "Must have at least 1 strategy");
+        this.id = id;
+        this.authorizeURL = authorizeURL;
+        this.strategies = strategies;
+        this.socialStrategies = new ArrayList<>();
+        this.enterpriseStrategies = new ArrayList<>();
+        for (Strategy strategy : strategies) {
+            if (Strategies.Auth0.getName().equals(strategy.getName())) {
+                this.databaseStrategy = strategy;
+            } else {
+                switch (strategy.getType()) {
+                    case SOCIAL:
+                        this.socialStrategies.add(strategy);
+                        break;
+                    case ENTERPRISE:
+                        this.enterpriseStrategies.add(strategy);
+                        break;
+                }
+            }
+        }
+    }
+
     /**
      * Creates a new application instance
      *

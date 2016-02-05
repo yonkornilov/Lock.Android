@@ -102,7 +102,11 @@ public class LockActivity extends AppCompatActivity {
         progress = (LockProgress) findViewById(R.id.com_auth0_lock_progress);
         rootView = (LinearLayout) findViewById(R.id.com_auth0_lock_content);
 
-        if (application == null) {
+        String applicationJson = getIntent().getStringExtra(Lock.USER_APPLICATION_EXTRA);
+        if (application == null && applicationJson != null) {
+            Log.i(TAG, "Reading user configured application.");
+            parseApplicationJSON(applicationJson);
+        } else if (application == null) {
             fetchApplicationInfo();
         }
     }
@@ -171,7 +175,13 @@ public class LockActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Response response) throws IOException {
-                application = parseJSONP(response);
+                try {
+                    application = parseApplicationJSON(response.body().string());
+                } catch (Exception e) {
+                    Log.e(TAG, "Invalid Application JSONP response from server");
+                    return;
+                }
+
                 Log.i(TAG, "Application received!: " + application.getId());
                 handler.post(new Runnable() {
                     @Override
@@ -181,6 +191,7 @@ public class LockActivity extends AppCompatActivity {
                         initLockUI();
                     }
                 });
+
             }
         });
 
@@ -206,9 +217,8 @@ public class LockActivity extends AppCompatActivity {
     /**
      * Parses the Application JSONP received from the API.
      */
-    private Application parseJSONP(Response response) {
+    private Application parseApplicationJSON(String json) {
         try {
-            String json = response.body().string();
             final int length = JSONP_PREFIX.length();
             if (json.length() < length) {
                 throw new JSONException("Invalid App Info JSONP");
