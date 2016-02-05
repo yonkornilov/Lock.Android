@@ -68,6 +68,9 @@ public class Application {
         checkArgument(authorizeURL != null, "authorize must be non-null");
         checkArgument(strategies != null && strategies.size() > 0, "Must have at least 1 strategy");
         this.id = id;
+        this.tenant = ""; //domain.split("\\.")[0]; (domain from params)
+        this.callbackURL = "";
+        this.subscription = "";
         this.authorizeURL = authorizeURL;
         this.strategies = strategies;
         this.socialStrategies = new ArrayList<>();

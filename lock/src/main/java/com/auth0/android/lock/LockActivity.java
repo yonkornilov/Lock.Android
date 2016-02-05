@@ -105,7 +105,9 @@ public class LockActivity extends AppCompatActivity {
         String applicationJson = getIntent().getStringExtra(Lock.USER_APPLICATION_EXTRA);
         if (application == null && applicationJson != null) {
             Log.i(TAG, "Reading user configured application.");
-            parseApplicationJSON(applicationJson);
+            application = parseApplicationJSON(applicationJson);
+            progress.showResult("");
+            initLockUI();
         } else if (application == null) {
             fetchApplicationInfo();
         }

@@ -42,8 +42,10 @@ import java.util.List;
 import java.util.Map;
 
 //TODO: Test this class
-class ApplicationBuilder {
+public class ApplicationBuilder {
     private static final String TAG = ApplicationBuilder.class.getSimpleName();
+    public static final String JSONP_HEADER = "Auth0.setClient(";
+    public static final String JSONP_TRAIL = ");";
 
     private String id;
     private String authorizeUrl;
@@ -55,6 +57,7 @@ class ApplicationBuilder {
         connectionsMap = new HashMap<>();
     }
 
+    //We can avoid this constructor by moving this builder into an inner class on Lock class.
     public static ApplicationBuilder newBuilder(Auth0 account) {
         return new ApplicationBuilder(account);
     }
@@ -91,7 +94,9 @@ class ApplicationBuilder {
         ObjectWriter ow = new ObjectMapper().writer();
         String json = null;
         try {
-            json = ow.writeValueAsString(app);
+            json = JSONP_HEADER + ow.writeValueAsString(app) + JSONP_TRAIL;
+            json = json.replace("\"authorizeURL\":", "\"authorize\":");
+            json = json.replace("\"callbackURL\":", "\"callback\":");
         } catch (JsonProcessingException e) {
             Log.e(TAG, "Error processing the input data");
             e.printStackTrace();
@@ -114,14 +119,14 @@ class ApplicationBuilder {
     }
 
 
-    public class DatabaseConnection {
+    public static class DatabaseConnection {
         public static final String NAME = "name";
         public static final String SHOW_SIGNUP = "showSignup";
         public static final String SHOW_FORGOT = "showForgot";
         public static final String REQUIRES_USERNAME = "requires_username";
         private final Map<String, Object> values;
 
-        public DatabaseConnection(Connection connectionName) {
+        public DatabaseConnection(String connectionName) {
             values = new HashMap<>();
             values.put(NAME, connectionName);
             values.put(SHOW_SIGNUP, true);
@@ -129,7 +134,7 @@ class ApplicationBuilder {
             values.put(REQUIRES_USERNAME, false);
         }
 
-        public DatabaseConnection(Connection connectionName, boolean signUpEnabled, boolean changePasswordEnabled) {
+        public DatabaseConnection(String connectionName, boolean signUpEnabled, boolean changePasswordEnabled) {
             values = new HashMap<>();
             values.put(NAME, connectionName);
             values.put(SHOW_SIGNUP, signUpEnabled);
@@ -137,7 +142,7 @@ class ApplicationBuilder {
             values.put(REQUIRES_USERNAME, false);
         }
 
-        public DatabaseConnection(Connection connectionName, boolean signUpEnabled, boolean changePasswordEnabled, boolean requiresUsername) {
+        public DatabaseConnection(String connectionName, boolean signUpEnabled, boolean changePasswordEnabled, boolean requiresUsername) {
             values = new HashMap<>();
             values.put(NAME, connectionName);
             values.put(SHOW_SIGNUP, signUpEnabled);
@@ -150,7 +155,7 @@ class ApplicationBuilder {
         }
     }
 
-    public class SocialConnection {
+    public static class SocialConnection {
         public static final String NAME = "name";
         private final String strategyName;
         private final Map<String, Object> values;

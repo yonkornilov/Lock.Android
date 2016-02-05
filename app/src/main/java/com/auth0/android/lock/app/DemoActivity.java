@@ -34,6 +34,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.auth0.Auth0;
+import com.auth0.android.lock.ApplicationBuilder;
 import com.auth0.android.lock.AuthenticationCallback;
 import com.auth0.android.lock.Lock;
 import com.auth0.android.lock.utils.LockException;
@@ -122,6 +123,7 @@ public class DemoActivity extends AppCompatActivity implements AuthenticationCal
                 .setDevice(Build.MODEL)
                 .setScope(SCOPE_OPENID_OFFLINE_ACCESS)
                 .asDictionary();
+
         // create/configure lock
         lock = Lock.newBuilder()
                 .withAccount(auth0)
@@ -130,6 +132,14 @@ public class DemoActivity extends AppCompatActivity implements AuthenticationCal
                 .withAuthenticationParameters(params)
                 .loginAfterSignUp(false)
                 .build();
+
+        //Use custom application
+        ApplicationBuilder.DatabaseConnection dbConnection = new ApplicationBuilder.DatabaseConnection("connection2");
+        String app = lock.getApplicationBuilder()
+                .withDatabaseConnection(dbConnection)
+                .build();
+        lock.setApplication(app);
+
         lock.onCreate(DemoActivity.this);
 
         // launch, the results will be received in the callback
