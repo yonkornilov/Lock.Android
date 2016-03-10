@@ -26,6 +26,7 @@ package com.auth0.android.lock;
 
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -54,7 +55,6 @@ import com.auth0.android.lock.utils.Application;
 import com.auth0.android.lock.utils.ApplicationFetcher;
 import com.auth0.android.lock.utils.Strategies;
 import com.auth0.android.lock.views.ClassicPanelHolder;
-import com.auth0.android.lock.views.ActionButton;
 import com.auth0.authentication.AuthenticationAPIClient;
 import com.auth0.authentication.AuthenticationRequest;
 import com.auth0.authentication.ChangePasswordRequest;
@@ -84,6 +84,7 @@ public class LockActivity extends AppCompatActivity {
 
     private WebIdentityProvider lastIdp;
     private TextView errorMessage;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -352,18 +353,21 @@ public class LockActivity extends AppCompatActivity {
 
         @Override
         public void onSuccess(@NonNull final Token token) {
+            showProgressDialog(true);
             Log.d(TAG, "Fetching user profile..");
             Request<UserProfile> request = options.getAuthenticationAPIClient().tokenInfo(token.getIdToken());
             request.start(new BaseCallback<UserProfile>() {
                 @Override
                 public void onSuccess(UserProfile profile) {
                     Log.d(TAG, "OnSuccess called for user " + profile.getName());
+                    showProgressDialog(false);
                     Authentication authentication = new Authentication(profile, token);
                     deliverResult(authentication);
                 }
 
                 @Override
                 public void onFailure(final Auth0Exception error) {
+                    showProgressDialog(false);
                     Log.w(TAG, "OnFailure called");
                     handler.post(new Runnable() {
                         @Override
@@ -375,6 +379,25 @@ public class LockActivity extends AppCompatActivity {
             });
         }
     };
+
+    private void showProgressDialog(boolean show) {
+        if (progressDialog != null && !show) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog.dismiss();
+                    progressDialog = null;
+                }
+            });
+        } else if (progressDialog == null && show) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    progressDialog = ProgressDialog.show(LockActivity.this, "Please wait", "Logging in to Auth0", true, false);
+                }
+            });
+        }
+    }
 
     private BaseCallback<Authentication> authCallback = new BaseCallback<Authentication>() {
         @Override
