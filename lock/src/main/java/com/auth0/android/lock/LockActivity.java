@@ -39,6 +39,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -82,6 +83,7 @@ public class LockActivity extends AppCompatActivity {
     private Bus lockBus;
     private RelativeLayout rootView;
     private ClassicPanelHolder panelHolder;
+    private ProgressBar progressBar;
 
     private WebIdentityProvider lastIdp;
     private TextView errorMessage;
@@ -100,6 +102,7 @@ public class LockActivity extends AppCompatActivity {
         handler = new Handler(getMainLooper());
 
         setContentView(R.layout.com_auth0_lock_activity_lock);
+        progressBar = (ProgressBar) findViewById(R.id.com_auth0_lock_progressbar);
         errorMessage = (TextView) findViewById(R.id.com_auth0_lock_error_message);
         rootView = (RelativeLayout) findViewById(R.id.com_auth0_lock_content);
 
@@ -326,6 +329,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    progressBar.setVisibility(View.GONE);
                     setErrorMessage("");
                     initLockUI();
                 }
@@ -338,6 +342,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
+                    progressBar.setVisibility(View.GONE);
                     setErrorMessage(error.getMessage());
                 }
             });
