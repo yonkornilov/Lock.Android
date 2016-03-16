@@ -221,6 +221,18 @@ public class PasswordlessLockActivity extends AppCompatActivity {
     }
 
     private void processIncomingIntent(Intent intent) {
+        if (options != null && lastIdp != null) {
+            if (panelHolder != null && intent == null) {
+                panelHolder.showProgress(false);
+            }
+            if (intent != null) {
+                AuthorizeResult result = new AuthorizeResult(intent);
+                if (lastIdp.authorize(PasswordlessLockActivity.this, result)) {
+                    return;
+                }
+            }
+        }
+
         if (options != null && lastPasswordlessEmailOrNumber != null && configuration.getPasswordlessMode() == PasswordlessMode.EMAIL_LINK) {
             String code = intent.getData().getQueryParameter("code");
             if (code == null || code.isEmpty()) {
@@ -230,12 +242,6 @@ public class PasswordlessLockActivity extends AppCompatActivity {
                 PasswordlessLoginEvent event = new PasswordlessLoginEvent(configuration.getPasswordlessMode(), lastPasswordlessEmailOrNumber, code);
                 onPasswordlessAuthenticationRequest(event);
             }
-        } else if (options != null && lastIdp != null) {
-            if (panelHolder != null && intent == null) {
-                panelHolder.showProgress(false);
-            }
-            AuthorizeResult result = new AuthorizeResult(intent);
-            lastIdp.authorize(PasswordlessLockActivity.this, result);
         } else {
             setErrorMessage(getString(R.string.com_auth0_lock_error_unexpected_passwordless_intent));
         }
