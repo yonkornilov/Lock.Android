@@ -33,6 +33,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -73,6 +74,7 @@ import com.squareup.otto.Subscribe;
 public class LockActivity extends AppCompatActivity {
 
     private static final String TAG = LockActivity.class.getSimpleName();
+    private static final long RESULT_MESSAGE_DURATION = 3000;
 
     private Application application;
     private ApplicationFetcher applicationFetcher;
@@ -85,7 +87,7 @@ public class LockActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private WebIdentityProvider lastIdp;
-    private TextView errorMessage;
+    private TextView resultMessage;
     private ProgressDialog progressDialog;
 
     @Override
@@ -102,7 +104,7 @@ public class LockActivity extends AppCompatActivity {
 
         setContentView(R.layout.com_auth0_lock_activity_lock);
         progressBar = (ProgressBar) findViewById(R.id.com_auth0_lock_progressbar);
-        errorMessage = (TextView) findViewById(R.id.com_auth0_lock_error_message);
+        resultMessage = (TextView) findViewById(R.id.com_auth0_lock_result_message);
         rootView = (RelativeLayout) findViewById(R.id.com_auth0_lock_content);
 
         if (application == null && applicationFetcher == null) {
@@ -170,13 +172,26 @@ public class LockActivity extends AppCompatActivity {
         finish();
     }
 
-    private void setErrorMessage(String message) {
-        errorMessage.setVisibility(message.isEmpty() ? View.GONE : View.VISIBLE);
-        errorMessage.setText(message);
+    private void setResultMessage(@StringRes int stringId, boolean isSuccess) {
+        String text = getResources().getString(stringId);
+        resultMessage.setBackgroundColor(getResources().getColor(isSuccess ? R.color.com_auth0_lock_result_message_success_background : R.color.com_auth0_lock_result_message_error_background));
+        resultMessage.setVisibility(View.VISIBLE);
+        resultMessage.setText(text);
         if (panelHolder != null) {
             panelHolder.showProgress(false);
         }
+        handler.removeCallbacks(resultMessageHider);
+        handler.postDelayed(resultMessageHider, RESULT_MESSAGE_DURATION);
     }
+
+    private Runnable resultMessageHider = new Runnable() {
+        @Override
+        public void run() {
+            if (resultMessage != null) {
+                resultMessage.setVisibility(View.GONE);
+            }
+        }
+    };
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -187,7 +202,10 @@ public class LockActivity extends AppCompatActivity {
                 panelHolder.showProgress(false);
             }
             AuthorizeResult result = new AuthorizeResult(requestCode, resultCode, data);
-            lastIdp.authorize(LockActivity.this, result);
+            boolean handled = lastIdp.authorize(LockActivity.this, result);
+            if (handled) {
+                setResultMessage(R.string.com_auth0_lock_result_message_social_authentication_error, false);
+            }
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -215,7 +233,6 @@ public class LockActivity extends AppCompatActivity {
         }
 
         if (panelHolder != null) {
-            setErrorMessage("");
             panelHolder.showProgress(true);
         }
         String pkgName = getApplicationContext().getPackageName();
@@ -234,7 +251,6 @@ public class LockActivity extends AppCompatActivity {
         }
 
         if (panelHolder != null) {
-            setErrorMessage("");
             panelHolder.showProgress(true);
         }
         AuthenticationAPIClient apiClient = options.getAuthenticationAPIClient();
@@ -255,7 +271,6 @@ public class LockActivity extends AppCompatActivity {
         apiClient.setDefaultDbConnection(configuration.getDefaultDatabaseConnection().getName());
 
         if (panelHolder != null) {
-            setErrorMessage("");
             panelHolder.showProgress(true);
         }
         if (event.loginAfterSignUp()) {
@@ -277,7 +292,6 @@ public class LockActivity extends AppCompatActivity {
         }
 
         if (panelHolder != null) {
-            setErrorMessage("");
             panelHolder.showProgress(true);
         }
         AuthenticationAPIClient apiClient = new AuthenticationAPIClient(options.getAccount());
@@ -297,7 +311,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setErrorMessage("No connection found for that domain.");
+                    setResultMessage(R.string.com_auth0_lock_result_message_no_matched_connection, false);
                 }
             });
             return;
@@ -310,7 +324,6 @@ public class LockActivity extends AppCompatActivity {
         }
 
         if (panelHolder != null) {
-            setErrorMessage("");
             panelHolder.showProgress(true);
         }
         if (event.useRO()) {
@@ -338,7 +351,6 @@ public class LockActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     progressBar.setVisibility(View.GONE);
-                    setErrorMessage("");
                     initLockUI();
                 }
             });
@@ -351,7 +363,7 @@ public class LockActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     progressBar.setVisibility(View.GONE);
-                    setErrorMessage(error.getMessage());
+                    setResultMessage(R.string.com_auth0_lock_result_message_generic_error, false);
                 }
             });
         }
@@ -389,7 +401,7 @@ public class LockActivity extends AppCompatActivity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            setErrorMessage(error.getMessage());
+                            setResultMessage(R.string.com_auth0_lock_result_message_social_authentication_error, false);
                         }
                     });
                 }
@@ -429,7 +441,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setErrorMessage(error.getMessage());
+                    setResultMessage(R.string.com_auth0_lock_result_message_generic_error, false);
                 }
             });
         }
@@ -442,7 +454,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setErrorMessage("User created, now login");
+                    setResultMessage(R.string.com_auth0_lock_result_message_sign_up_success, true);
                 }
             });
         }
@@ -453,7 +465,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setErrorMessage(error.getMessage());
+                    setResultMessage(R.string.com_auth0_lock_result_message_generic_error, false);
                 }
             });
         }
@@ -466,7 +478,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setErrorMessage("Change password accepted.");
+                    setResultMessage(R.string.com_auth0_lock_result_message_sign_up_success, true);
                 }
             });
 
@@ -478,7 +490,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setErrorMessage(error.getMessage());
+                    setResultMessage(R.string.com_auth0_lock_result_message_generic_error, false);
                 }
             });
         }
