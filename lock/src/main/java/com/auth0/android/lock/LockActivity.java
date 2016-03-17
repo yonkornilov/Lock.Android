@@ -43,7 +43,11 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.auth0.APIException;
 import com.auth0.Auth0Exception;
+import com.auth0.android.lock.errors.AuthenticationError;
+import com.auth0.android.lock.errors.LoginAuthenticationErrorBuilder;
+import com.auth0.android.lock.errors.SignUpAuthenticationErrorBuilder;
 import com.auth0.android.lock.events.DatabaseChangePasswordEvent;
 import com.auth0.android.lock.events.DatabaseLoginEvent;
 import com.auth0.android.lock.events.DatabaseSignUpEvent;
@@ -172,16 +176,20 @@ public class LockActivity extends AppCompatActivity {
         finish();
     }
 
-    private void setResultMessage(@StringRes int stringId, boolean isSuccess) {
-        String text = getResources().getString(stringId);
+    private void setResultMessage(String message, boolean isSuccess) {
         resultMessage.setBackgroundColor(getResources().getColor(isSuccess ? R.color.com_auth0_lock_result_message_success_background : R.color.com_auth0_lock_result_message_error_background));
         resultMessage.setVisibility(View.VISIBLE);
-        resultMessage.setText(text);
+        resultMessage.setText(message);
         if (panelHolder != null) {
             panelHolder.showProgress(false);
         }
         handler.removeCallbacks(resultMessageHider);
         handler.postDelayed(resultMessageHider, RESULT_MESSAGE_DURATION);
+    }
+
+    private void setResultMessage(@StringRes int messageRes, boolean isSuccess) {
+        String text = getResources().getString(messageRes);
+        setResultMessage(text, isSuccess);
     }
 
     private Runnable resultMessageHider = new Runnable() {
@@ -358,6 +366,9 @@ public class LockActivity extends AppCompatActivity {
 
         @Override
         public void onFailure(final Auth0Exception error) {
+            if (error instanceof APIException) {
+                ((APIException) error).getResponseError();
+            }
             applicationFetcher = null;
             handler.post(new Runnable() {
                 @Override
@@ -395,13 +406,15 @@ public class LockActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onFailure(final Auth0Exception error) {
+                public void onFailure(Auth0Exception error) {
+                    LoginAuthenticationErrorBuilder signUpErrorBuilder = new LoginAuthenticationErrorBuilder();
+                    final AuthenticationError authenticationError = signUpErrorBuilder.buildFrom(error);
                     showProgressDialog(false);
                     Log.w(TAG, "OnFailure called");
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            setResultMessage(R.string.com_auth0_lock_result_message_social_authentication_error, false);
+                            setResultMessage(authenticationError.getMessage(LockActivity.this), false);
                         }
                     });
                 }
@@ -438,10 +451,12 @@ public class LockActivity extends AppCompatActivity {
         @Override
         public void onFailure(final Auth0Exception error) {
             Log.e(TAG, "Login failed");
+            LoginAuthenticationErrorBuilder signUpErrorBuilder = new LoginAuthenticationErrorBuilder();
+            final AuthenticationError authenticationError = signUpErrorBuilder.buildFrom(error);
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setResultMessage(R.string.com_auth0_lock_result_message_generic_error, false);
+                    setResultMessage(authenticationError.getMessage(LockActivity.this), false);
                 }
             });
         }
@@ -454,7 +469,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setResultMessage(R.string.com_auth0_lock_result_message_sign_up_success, true);
+                    setResultMessage(R.string.com_auth0_lock_result_message_sign_up_change_password_success, true);
                 }
             });
         }
@@ -462,10 +477,13 @@ public class LockActivity extends AppCompatActivity {
         @Override
         public void onFailure(final Auth0Exception error) {
             Log.e(TAG, "User creation failed");
+            SignUpAuthenticationErrorBuilder signUpErrorBuilder = new SignUpAuthenticationErrorBuilder();
+            final AuthenticationError authenticationError = signUpErrorBuilder.buildFrom(error);
+            showProgressDialog(false);
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setResultMessage(R.string.com_auth0_lock_result_message_generic_error, false);
+                    setResultMessage(authenticationError.getMessage(LockActivity.this), false);
                 }
             });
         }
@@ -478,7 +496,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setResultMessage(R.string.com_auth0_lock_result_message_sign_up_success, true);
+                    setResultMessage(R.string.com_auth0_lock_result_message_sign_up_change_password_success, true);
                 }
             });
 
@@ -490,7 +508,7 @@ public class LockActivity extends AppCompatActivity {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setResultMessage(R.string.com_auth0_lock_result_message_generic_error, false);
+                    setResultMessage(R.string.com_auth0_lock_result_message_change_password_failed, false);
                 }
             });
         }
