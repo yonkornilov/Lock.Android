@@ -51,7 +51,9 @@ import com.auth0.android.lock.events.PasswordlessLoginEvent;
 import com.auth0.android.lock.events.SocialConnectionEvent;
 import com.auth0.android.lock.provider.AuthorizeResult;
 import com.auth0.android.lock.provider.CallbackHelper;
+import com.auth0.android.lock.provider.IdentityProvider;
 import com.auth0.android.lock.provider.IdentityProviderCallback;
+import com.auth0.android.lock.provider.ProviderResolverManager;
 import com.auth0.android.lock.provider.WebIdentityProvider;
 import com.auth0.android.lock.utils.Application;
 import com.auth0.android.lock.utils.ApplicationFetcher;
@@ -81,8 +83,8 @@ public class PasswordlessLockActivity extends AppCompatActivity {
     private TextView resultMessage;
 
     private String lastPasswordlessEmailOrNumber;
-    private WebIdentityProvider lastIdp;
     private ProgressDialog progressDialog;
+    private IdentityProvider lastIdp;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -111,7 +113,6 @@ public class PasswordlessLockActivity extends AppCompatActivity {
         if (options == null) {
             Log.e(TAG, "Lock Options are missing in the received Intent and PasswordlessLockActivity will not launch. " +
                     "Use the PasswordlessLock.Builder to generate a valid Intent.");
-            finish();
             return false;
         }
 
@@ -301,9 +302,14 @@ public class PasswordlessLockActivity extends AppCompatActivity {
         lastPasswordlessEmailOrNumber = null;
         String pkgName = getApplicationContext().getPackageName();
         CallbackHelper helper = new CallbackHelper(pkgName);
-        lastIdp = new WebIdentityProvider(helper, options.getAccount(), idpCallback);
-        lastIdp.setUseBrowser(options.useBrowser());
-        lastIdp.setParameters(options.getAuthenticationParameters());
+
+        lastIdp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, event.getConnectionName());
+        if (lastIdp == null) {
+            WebIdentityProvider webIdp = new WebIdentityProvider(helper, options.getAccount(), idpCallback);
+            webIdp.setUseBrowser(options.useBrowser());
+            webIdp.setParameters(options.getAuthenticationParameters());
+            lastIdp = webIdp;
+        }
         lastIdp.start(PasswordlessLockActivity.this, event.getConnectionName());
     }
 
