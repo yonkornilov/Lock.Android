@@ -34,6 +34,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -53,6 +54,7 @@ import com.auth0.android.lock.provider.AuthorizeResult;
 import com.auth0.android.lock.provider.CallbackHelper;
 import com.auth0.android.lock.provider.IdentityProvider;
 import com.auth0.android.lock.provider.IdentityProviderCallback;
+import com.auth0.android.lock.provider.IdentityProviderDelegator;
 import com.auth0.android.lock.provider.ProviderResolverManager;
 import com.auth0.android.lock.provider.WebIdentityProvider;
 import com.auth0.android.lock.utils.Application;
@@ -69,10 +71,11 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
-public class LockActivity extends AppCompatActivity {
+public class LockActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final String TAG = LockActivity.class.getSimpleName();
     private static final long RESULT_MESSAGE_DURATION = 3000;
+    private static final int PERMISSION_REQUEST_CODE = 201;
 
     private ApplicationFetcher applicationFetcher;
     private Configuration configuration;
@@ -83,7 +86,8 @@ public class LockActivity extends AppCompatActivity {
     private TextView resultMessage;
 
     private ProgressDialog progressDialog;
-    private IdentityProvider lastIdp;
+    private IdentityProviderDelegator lastIdp;
+    private String lastConnectionName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -198,6 +202,32 @@ public class LockActivity extends AppCompatActivity {
         });
     }
 
+    private void fetchProviderAndBeginAuthentication(String connectionName) {
+        IdentityProvider idp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, connectionName);
+        if (idp == null) {
+            String pkgName = getApplicationContext().getPackageName();
+            WebIdentityProvider webIdp = new WebIdentityProvider(new CallbackHelper(pkgName), options.getAccount(), idpCallback);
+            webIdp.setUseBrowser(options.useBrowser());
+            webIdp.setParameters(options.getAuthenticationParameters());
+            idp = webIdp;
+        }
+        lastIdp = new IdentityProviderDelegator(idp);
+        if (lastIdp.checkPermissions(this)) {
+            lastIdp.start(LockActivity.this, connectionName);
+        } else {
+            lastConnectionName = connectionName;
+            lastIdp.requestPermissions(this, PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (lastIdp != null && lastIdp.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            lastIdp.start(this, lastConnectionName);
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "OnActivityResult called with intent: " + data);
@@ -239,17 +269,7 @@ public class LockActivity extends AppCompatActivity {
     @Subscribe
     public void onSocialAuthenticationRequest(SocialConnectionEvent event) {
         //called on social button click
-        panelHolder.showProgress(true);
-        String pkgName = getApplicationContext().getPackageName();
-        CallbackHelper helper = new CallbackHelper(pkgName);
-        lastIdp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, event.getConnectionName());
-        if (lastIdp == null) {
-            WebIdentityProvider webIdp = new WebIdentityProvider(helper, options.getAccount(), idpCallback);
-            webIdp.setUseBrowser(options.useBrowser());
-            webIdp.setParameters(options.getAuthenticationParameters());
-            lastIdp = webIdp;
-        }
-        lastIdp.start(LockActivity.this, event.getConnectionName());
+        fetchProviderAndBeginAuthentication(event.getConnectionName());
     }
 
     @SuppressWarnings("unused")
@@ -331,14 +351,10 @@ public class LockActivity extends AppCompatActivity {
                     .setConnection(event.getConnectionName())
                     .addParameters(options.getAuthenticationParameters())
                     .start(authCallback);
-        } else {
-            String pkgName = getApplicationContext().getPackageName();
-            WebIdentityProvider webIdp = new WebIdentityProvider(new CallbackHelper(pkgName), options.getAccount(), idpCallback);
-            webIdp.setUseBrowser(options.useBrowser());
-            webIdp.setParameters(options.getAuthenticationParameters());
-            lastIdp = webIdp;
-            lastIdp.start(LockActivity.this, event.getConnectionName());
+            return;
         }
+
+        fetchProviderAndBeginAuthentication(event.getConnectionName());
     }
 
     //Callbacks
