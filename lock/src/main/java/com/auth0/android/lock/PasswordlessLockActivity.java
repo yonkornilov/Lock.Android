@@ -34,6 +34,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -53,6 +54,7 @@ import com.auth0.android.lock.provider.AuthorizeResult;
 import com.auth0.android.lock.provider.CallbackHelper;
 import com.auth0.android.lock.provider.IdentityProvider;
 import com.auth0.android.lock.provider.IdentityProviderCallback;
+import com.auth0.android.lock.provider.IdentityProviderDelegator;
 import com.auth0.android.lock.provider.ProviderResolverManager;
 import com.auth0.android.lock.provider.WebIdentityProvider;
 import com.auth0.android.lock.utils.Application;
@@ -67,11 +69,12 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
-public class PasswordlessLockActivity extends AppCompatActivity {
+public class PasswordlessLockActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final String TAG = PasswordlessLockActivity.class.getSimpleName();
     private static final int COUNTRY_CODE_REQUEST = 120;
     private static final long RESULT_MESSAGE_DURATION = 3000;
+    private static final int PERMISSION_REQUEST_CODE = 202;
 
     private ApplicationFetcher applicationFetcher;
     private Configuration configuration;
@@ -84,7 +87,9 @@ public class PasswordlessLockActivity extends AppCompatActivity {
 
     private String lastPasswordlessEmailOrNumber;
     private ProgressDialog progressDialog;
-    private IdentityProvider lastIdp;
+
+    private IdentityProviderDelegator lastIdp;
+    private String lastConnectionName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -256,6 +261,14 @@ public class PasswordlessLockActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (lastIdp != null && lastIdp.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            lastIdp.start(this, lastConnectionName);
+        }
+    }
+
     @SuppressWarnings("unused")
     @Subscribe
     public void onFetchApplicationRequest(FetchApplicationEvent event) {
@@ -298,19 +311,23 @@ public class PasswordlessLockActivity extends AppCompatActivity {
     @SuppressWarnings("unused")
     @Subscribe
     public void onSocialAuthenticationRequest(SocialConnectionEvent event) {
-        panelHolder.showProgress(true);
         lastPasswordlessEmailOrNumber = null;
-        String pkgName = getApplicationContext().getPackageName();
-        CallbackHelper helper = new CallbackHelper(pkgName);
-
-        lastIdp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, event.getConnectionName());
-        if (lastIdp == null) {
-            WebIdentityProvider webIdp = new WebIdentityProvider(helper, options.getAccount(), idpCallback);
+        IdentityProvider idp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, event.getConnectionName());
+        if (idp == null) {
+            String pkgName = getApplicationContext().getPackageName();
+            WebIdentityProvider webIdp = new WebIdentityProvider(new CallbackHelper(pkgName), options.getAccount(), idpCallback);
             webIdp.setUseBrowser(options.useBrowser());
             webIdp.setParameters(options.getAuthenticationParameters());
-            lastIdp = webIdp;
+            idp = webIdp;
         }
-        lastIdp.start(PasswordlessLockActivity.this, event.getConnectionName());
+        lastIdp = new IdentityProviderDelegator(idp);
+        if (lastIdp.checkPermissions(this)) {
+            panelHolder.showProgress(true);
+            lastIdp.start(PasswordlessLockActivity.this, event.getConnectionName());
+        } else {
+            lastConnectionName = event.getConnectionName();
+            lastIdp.requestPermissions(this, PERMISSION_REQUEST_CODE);
+        }
     }
 
     //Callbacks
