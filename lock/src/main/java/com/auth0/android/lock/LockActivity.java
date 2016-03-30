@@ -54,7 +54,6 @@ import com.auth0.android.lock.provider.AuthorizeResult;
 import com.auth0.android.lock.provider.CallbackHelper;
 import com.auth0.android.lock.provider.IdentityProvider;
 import com.auth0.android.lock.provider.IdentityProviderCallback;
-import com.auth0.android.lock.provider.IdentityProviderDelegator;
 import com.auth0.android.lock.provider.ProviderResolverManager;
 import com.auth0.android.lock.provider.WebIdentityProvider;
 import com.auth0.android.lock.utils.Application;
@@ -86,8 +85,7 @@ public class LockActivity extends AppCompatActivity implements ActivityCompat.On
     private TextView resultMessage;
 
     private ProgressDialog progressDialog;
-    private IdentityProviderDelegator lastIdp;
-    private String lastConnectionName;
+    private IdentityProvider lastIdp;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -203,28 +201,22 @@ public class LockActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     private void fetchProviderAndBeginAuthentication(String connectionName) {
-        IdentityProvider idp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, connectionName);
-        if (idp == null) {
+        lastIdp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, connectionName);
+        if (lastIdp == null) {
             String pkgName = getApplicationContext().getPackageName();
             WebIdentityProvider webIdp = new WebIdentityProvider(new CallbackHelper(pkgName), options.getAccount(), idpCallback);
             webIdp.setUseBrowser(options.useBrowser());
             webIdp.setParameters(options.getAuthenticationParameters());
-            idp = webIdp;
+            lastIdp = webIdp;
         }
-        lastIdp = new IdentityProviderDelegator(idp);
-        if (lastIdp.checkPermissions(this)) {
-            lastIdp.start(LockActivity.this, connectionName);
-        } else {
-            lastConnectionName = connectionName;
-            lastIdp.requestPermissions(this, PERMISSION_REQUEST_CODE);
-        }
+        lastIdp.start(this, connectionName, PERMISSION_REQUEST_CODE);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (lastIdp != null && lastIdp.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
-            lastIdp.start(this, lastConnectionName);
+        if (lastIdp != null) {
+            lastIdp.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
         }
     }
 
@@ -387,6 +379,7 @@ public class LockActivity extends AppCompatActivity implements ActivityCompat.On
         @Override
         public void onFailure(@NonNull Dialog dialog) {
             Log.w(TAG, "OnFailure called");
+            dialog.show();
             handler.post(new Runnable() {
                 @Override
                 public void run() {

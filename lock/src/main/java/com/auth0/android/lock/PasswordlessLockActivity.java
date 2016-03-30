@@ -54,7 +54,6 @@ import com.auth0.android.lock.provider.AuthorizeResult;
 import com.auth0.android.lock.provider.CallbackHelper;
 import com.auth0.android.lock.provider.IdentityProvider;
 import com.auth0.android.lock.provider.IdentityProviderCallback;
-import com.auth0.android.lock.provider.IdentityProviderDelegator;
 import com.auth0.android.lock.provider.ProviderResolverManager;
 import com.auth0.android.lock.provider.WebIdentityProvider;
 import com.auth0.android.lock.utils.Application;
@@ -87,9 +86,7 @@ public class PasswordlessLockActivity extends AppCompatActivity implements Activ
 
     private String lastPasswordlessEmailOrNumber;
     private ProgressDialog progressDialog;
-
-    private IdentityProviderDelegator lastIdp;
-    private String lastConnectionName;
+    private IdentityProvider lastIdp;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -264,8 +261,8 @@ public class PasswordlessLockActivity extends AppCompatActivity implements Activ
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (lastIdp != null && lastIdp.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
-            lastIdp.start(this, lastConnectionName);
+        if (lastIdp != null) {
+            lastIdp.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
         }
     }
 
@@ -312,22 +309,15 @@ public class PasswordlessLockActivity extends AppCompatActivity implements Activ
     @Subscribe
     public void onSocialAuthenticationRequest(SocialConnectionEvent event) {
         lastPasswordlessEmailOrNumber = null;
-        IdentityProvider idp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, event.getConnectionName());
-        if (idp == null) {
+        lastIdp = ProviderResolverManager.get().onIdentityProviderRequest(this, idpCallback, event.getConnectionName());
+        if (lastIdp == null) {
             String pkgName = getApplicationContext().getPackageName();
             WebIdentityProvider webIdp = new WebIdentityProvider(new CallbackHelper(pkgName), options.getAccount(), idpCallback);
             webIdp.setUseBrowser(options.useBrowser());
             webIdp.setParameters(options.getAuthenticationParameters());
-            idp = webIdp;
+            lastIdp = webIdp;
         }
-        lastIdp = new IdentityProviderDelegator(idp);
-        if (lastIdp.checkPermissions(this)) {
-            panelHolder.showProgress(true);
-            lastIdp.start(PasswordlessLockActivity.this, event.getConnectionName());
-        } else {
-            lastConnectionName = event.getConnectionName();
-            lastIdp.requestPermissions(this, PERMISSION_REQUEST_CODE);
-        }
+        lastIdp.start(this, event.getConnectionName(), PERMISSION_REQUEST_CODE);
     }
 
     //Callbacks
